@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7b3ccffa6eed82408a724996f83b7f1, type: 3}
+  m_Name: New Mythic Data
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.Mythics.MythicData
+  mythicId: 2aad4d6c-e8f8-4176-963b-42eccf243c1f
+  mythicName: Escudo Final
+  description: Bloqueia todo o dano de um ataque.
+  icon: {fileID: 0}
+  activationText: ESCUDO FINAL ATIVADO
+  activationSound: {fileID: 0}
+  effectType: 1
+  effectValue: 0
+  canBeUsedAnytime: 1
+  isRevealedOnlyOnUse: 1
