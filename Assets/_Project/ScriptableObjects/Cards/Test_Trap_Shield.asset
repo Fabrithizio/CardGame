@@ -31,3 +31,6 @@ MonoBehaviour:
   hasLifeSteal: 0
   hasRetaliation: 0
   hasShield: 0
+  trapTriggerType: 1
+  trapEffectType: 1
+  trapEffectValue: 0

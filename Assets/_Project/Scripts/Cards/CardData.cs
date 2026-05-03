@@ -1,7 +1,8 @@
 // Caminho: Assets/_Project/Scripts/Cards/CardData.cs
-// Descrição: Define os dados fixos de uma carta do deck, como nome, imagem, tipo, raridade, custo e atributos base.
+// Descrição: Define os dados fixos de uma carta do deck, como nome, imagem, tipo, raridade, custo, atributos base e configuração inicial de armadilhas.
 
 using System;
+using CardGame.Effects;
 using UnityEngine;
 
 namespace CardGame.Cards
@@ -15,8 +16,10 @@ namespace CardGame.Cards
         [Header("Identidade da Carta")]
         [SerializeField] private string cardId;
         [SerializeField] private string cardName;
+
         [TextArea(3, 6)]
         [SerializeField] private string description;
+
         [SerializeField] private Sprite artwork;
 
         [Header("Classificação")]
@@ -46,13 +49,20 @@ namespace CardGame.Cards
         [Min(0)]
         [SerializeField] private int resistance;
 
-        [Header("Regras Especiais")]
+        [Header("Regras Especiais de Criatura")]
         [SerializeField] private bool canAttackDirectly;
         [SerializeField] private bool hasTaunt;
         [SerializeField] private bool hasPiercing;
         [SerializeField] private bool hasLifeSteal;
         [SerializeField] private bool hasRetaliation;
         [SerializeField] private bool hasShield;
+
+        [Header("Configuração de Armadilha")]
+        [SerializeField] private TrapTriggerType trapTriggerType = TrapTriggerType.None;
+        [SerializeField] private TrapEffectType trapEffectType = TrapEffectType.None;
+
+        [Min(0)]
+        [SerializeField] private int trapEffectValue;
 
         public string CardId => cardId;
         public string CardName => cardName;
@@ -77,6 +87,10 @@ namespace CardGame.Cards
         public bool HasLifeSteal => hasLifeSteal;
         public bool HasRetaliation => hasRetaliation;
         public bool HasShield => hasShield;
+
+        public TrapTriggerType TrapTriggerType => trapTriggerType;
+        public TrapEffectType TrapEffectType => trapEffectType;
+        public int TrapEffectValue => trapEffectValue;
 
         public int GetAttribute(CardAttributeType attributeType)
         {
@@ -106,6 +120,14 @@ namespace CardGame.Cards
             defense = Mathf.Max(0, defense);
             focus = Mathf.Max(0, focus);
             resistance = Mathf.Max(0, resistance);
+            trapEffectValue = Mathf.Max(0, trapEffectValue);
+
+            if (cardType != CardType.Trap)
+            {
+                trapTriggerType = TrapTriggerType.None;
+                trapEffectType = TrapEffectType.None;
+                trapEffectValue = 0;
+            }
         }
     }
 }
