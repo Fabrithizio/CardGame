@@ -53,33 +53,33 @@ namespace CardGame.UI
         [SerializeField] private bool updateLayoutEveryFrame = true;
 
         [Header("Blocos Principais - Y")]
-        [SerializeField] [Range(0f, 1f)] private float enemyHudMinY = 0.855f;
+        [SerializeField] [Range(0f, 1f)] private float enemyHudMinY = 0.865f;
         [SerializeField] [Range(0f, 1f)] private float enemyBoardMinY = 0.605f;
-        [SerializeField] [Range(0f, 1f)] private float combatMinY = 0.485f;
-        [SerializeField] [Range(0f, 1f)] private float playerBoardMinY = 0.240f;
-        [SerializeField] [Range(0f, 1f)] private float bottomHudMaxY = 0.240f;
+        [SerializeField] [Range(0f, 1f)] private float combatMinY = 0.500f;
+        [SerializeField] [Range(0f, 1f)] private float playerBoardMinY = 0.255f;
+        [SerializeField] [Range(0f, 1f)] private float bottomHudMaxY = 0.255f;
 
         [Header("Campo - Largura")]
         [SerializeField] [Range(0f, 0.2f)] private float boardLeft = 0.035f;
-        [SerializeField] [Range(0.65f, 0.95f)] private float boardCardsRight = 0.855f;
-        [SerializeField] [Range(0.84f, 1f)] private float mythicLeft = 0.872f;
+        [SerializeField] [Range(0.65f, 0.95f)] private float boardCardsRight = 0.840f;
+        [SerializeField] [Range(0.84f, 1f)] private float mythicLeft = 0.858f;
         [SerializeField] [Range(0.90f, 1f)] private float mythicRight = 0.985f;
 
         [Header("Campo - Altura Interna")]
-        [SerializeField] [Range(0.35f, 0.75f)] private float creatureRowMinY = 0.455f;
+        [SerializeField] [Range(0.30f, 0.70f)] private float creatureRowMinY = 0.405f;
         [SerializeField] [Range(0.75f, 1f)] private float creatureRowMaxY = 0.965f;
-        [SerializeField] [Range(0f, 0.35f)] private float trapRowMinY = 0.100f;
-        [SerializeField] [Range(0.20f, 0.55f)] private float trapRowMaxY = 0.405f;
+        [SerializeField] [Range(0f, 0.35f)] private float trapRowMinY = 0.055f;
+        [SerializeField] [Range(0.20f, 0.55f)] private float trapRowMaxY = 0.375f;
 
         [Header("Rodapé")]
         [SerializeField] [Range(0f, 0.2f)] private float bottomLeft = 0.02f;
         [SerializeField] [Range(0.07f, 0.18f)] private float playerDeckRight = 0.105f;
         [SerializeField] [Range(0.08f, 0.25f)] private float playerHealthLeft = 0.115f;
         [SerializeField] [Range(0.25f, 0.45f)] private float playerHealthRight = 0.34f;
-        [SerializeField] [Range(0.15f, 0.40f)] private float playerHandLeft = 0.22f;
-        [SerializeField] [Range(0.60f, 0.90f)] private float playerHandRight = 0.80f;
-        [SerializeField] [Range(0.75f, 0.95f)] private float turnButtonLeft = 0.82f;
-        [SerializeField] [Range(0.90f, 1f)] private float turnButtonRight = 0.97f;
+        [SerializeField] [Range(0.15f, 0.40f)] private float playerHandLeft = 0.205f;
+        [SerializeField] [Range(0.60f, 0.90f)] private float playerHandRight = 0.805f;
+        [SerializeField] [Range(0.75f, 0.95f)] private float turnButtonLeft = 0.835f;
+        [SerializeField] [Range(0.90f, 1f)] private float turnButtonRight = 0.970f;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugZoneNames = false;
