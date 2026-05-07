@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/BattleBoardUI.cs
-// Descrição: Campo com 5 criaturas maiores, 6 armadilhas/magias compactas e layout recalculado em tempo real.
+// Descrição: Campo com 5 criaturas maiores, 6 armadilhas/magias proporcionais e layout recalculado em tempo real.
 
 using System.Collections.Generic;
 using CardGame.Battle;
@@ -21,26 +21,27 @@ namespace CardGame.UI
         [SerializeField] private bool updateLayoutEveryFrame = true;
 
         [Header("Criaturas")]
-        [SerializeField] private Vector2 creatureSize = new Vector2(190f, 246f);
+        [SerializeField] private Vector2 creatureSize = new Vector2(210f, 272f);
         [SerializeField] private float creatureSpacing = 8f;
-        [SerializeField] [Range(0.6f, 1f)] private float creatureHeightUse = 0.96f;
+        [SerializeField] [Range(0.6f, 1f)] private float creatureHeightUse = 0.98f;
 
         [Header("Armadilhas/Magias")]
-        [SerializeField] private Vector2 trapSize = new Vector2(108f, 96f);
+        [SerializeField] private Vector2 trapSize = new Vector2(126f, 104f);
         [SerializeField] private float trapSpacing = 7f;
-        [SerializeField] private float trapCounterWidth = 94f;
-        [SerializeField] [Range(0.55f, 1f)] private float trapHeightUse = 0.92f;
+        [SerializeField] private float trapCounterWidth = 84f;
+        [SerializeField] [Range(0.55f, 1f)] private float trapHeightUse = 0.94f;
 
         [Header("Visual das Linhas")]
         [SerializeField] private bool showTrapBandBackground = true;
-        [SerializeField] private Color trapBandColor = new Color(0.48f, 0.38f, 0.14f, 0.58f);
+        [SerializeField] private Color trapBandColor = new Color(0.28f, 0.23f, 0.12f, 0.48f);
+        [SerializeField] private Color boardLineColor = new Color(0.90f, 0.74f, 0.34f, 0.18f);
 
         [Header("Texto")]
         [SerializeField] private int nameFontSize = 15;
         [SerializeField] private int statsFontSize = 12;
         [SerializeField] private int statusFontSize = 10;
         [SerializeField] private int trapFontSize = 11;
-        [SerializeField] private int trapCounterFontSize = 14;
+        [SerializeField] private int trapCounterFontSize = 13;
 
         [Header("Seleção")]
         [SerializeField] private Color selectedColor = new Color(0.15f, 0.85f, 1f, 0.95f);
@@ -158,7 +159,7 @@ namespace CardGame.UI
             bandImage.raycastTarget = false;
 
             Outline bandOutline = bandObject.AddComponent<Outline>();
-            bandOutline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.22f);
+            bandOutline.effectColor = boardLineColor;
             bandOutline.effectDistance = new Vector2(1.5f, -1.5f);
 
             GameObject counterObject = new GameObject("Trap Counter");
@@ -171,8 +172,8 @@ namespace CardGame.UI
 
             Image counterBg = counterObject.AddComponent<Image>();
             counterBg.color = isPlayerBand
-                ? new Color(0.02f, 0.10f, 0.20f, 0.94f)
-                : new Color(0.08f, 0.05f, 0.16f, 0.94f);
+                ? new Color(0.02f, 0.10f, 0.20f, 0.96f)
+                : new Color(0.08f, 0.05f, 0.16f, 0.96f);
 
             Outline counterOutline = counterObject.AddComponent<Outline>();
             counterOutline.effectColor = new Color(0f, 0f, 0f, 0.65f);
@@ -190,7 +191,7 @@ namespace CardGame.UI
             slotsRect.anchorMax = new Vector2(0f, 0.5f);
             slotsRect.pivot = new Vector2(0f, 0.5f);
 
-            return new TrapBandUI(bandRect, bandImage, counterRect, counterText, slotsRect);
+            return new TrapBandUI(bandRect, bandImage, bandOutline, counterRect, counterText, slotsRect);
         }
 
         private CardSlotUI CreateCreatureSlot(RectTransform parent, bool isPlayerSlot, int slotIndex)
@@ -207,7 +208,7 @@ namespace CardGame.UI
             background.color = GetCreatureEmptyColor(isPlayerSlot);
 
             Outline outline = slotObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.25f);
+            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.22f);
             outline.effectDistance = new Vector2(2f, -2f);
 
             Button button = slotObject.AddComponent<Button>();
@@ -274,8 +275,8 @@ namespace CardGame.UI
             RectTransform rect = textObject.AddComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
-            rect.offsetMin = new Vector2(8f, 6f);
-            rect.offsetMax = new Vector2(-8f, -6f);
+            rect.offsetMin = new Vector2(6f, 5f);
+            rect.offsetMax = new Vector2(-6f, -5f);
 
             Text text = textObject.AddComponent<Text>();
             text.font = defaultFont;
@@ -286,7 +287,7 @@ namespace CardGame.UI
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
             text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 8;
+            text.resizeTextMinSize = 7;
             text.resizeTextMaxSize = fontSize;
             text.text = string.Empty;
 
@@ -374,10 +375,15 @@ namespace CardGame.UI
                 band.background.color = trapBandColor;
             }
 
+            if (band.outline != null)
+            {
+                band.outline.effectColor = boardLineColor;
+            }
+
             float width = Mathf.Max(1f, band.root.rect.width);
             float height = Mathf.Max(1f, band.root.rect.height);
 
-            float counterWidth = Mathf.Clamp(trapCounterWidth, 48f, width * 0.18f);
+            float counterWidth = Mathf.Clamp(trapCounterWidth, 42f, width * 0.145f);
             float outerPadding = 8f;
             float gap = Mathf.Max(6f, trapSpacing);
             float slotAreaWidth = Mathf.Max(1f, width - counterWidth - gap - outerPadding * 2f);
@@ -389,7 +395,7 @@ namespace CardGame.UI
             float slotHeight = Mathf.Min(trapSize.y, height * trapHeightUse, slotWidth * 0.92f);
             slotHeight = Mathf.Max(30f, slotHeight);
 
-            float contentHeight = Mathf.Max(slotHeight, Mathf.Min(height * 0.92f, slotHeight + 18f));
+            float contentHeight = Mathf.Max(slotHeight, Mathf.Min(height * 0.92f, slotHeight + 12f));
             band.counterRect.sizeDelta = new Vector2(counterWidth, contentHeight);
             band.counterRect.anchoredPosition = new Vector2(outerPadding, 0f);
 
@@ -696,14 +702,16 @@ namespace CardGame.UI
         {
             public readonly RectTransform root;
             public readonly Image background;
+            public readonly Outline outline;
             public readonly RectTransform counterRect;
             public readonly Text counterText;
             public readonly RectTransform slotsParent;
 
-            public TrapBandUI(RectTransform root, Image background, RectTransform counterRect, Text counterText, RectTransform slotsParent)
+            public TrapBandUI(RectTransform root, Image background, Outline outline, RectTransform counterRect, Text counterText, RectTransform slotsParent)
             {
                 this.root = root;
                 this.background = background;
+                this.outline = outline;
                 this.counterRect = counterRect;
                 this.counterText = counterText;
                 this.slotsParent = slotsParent;

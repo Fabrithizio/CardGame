@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/PlayerHandUI.cs
-// Descrição: Mão do jogador em leque, maior, mais alta e sem ficar afundada no rodapé.
+// Descrição: Mão do jogador em leque mais alta, mais legível e atualizada em tempo real.
 
 using System.Collections.Generic;
 using CardGame.Battle;
@@ -15,16 +15,20 @@ namespace CardGame.UI
         [SerializeField] private BattleManager battleManager;
         [SerializeField] private CardPreviewUI cardPreviewUI;
 
+        [Header("Atualização em Tempo Real")]
+        [SerializeField] private bool updateLayoutEveryFrame = true;
+
         [Header("Layout")]
-        [SerializeField] private Vector2 cardSize = new Vector2(118f, 176f);
-        [SerializeField] private float cardSpacing = -34f;
-        [SerializeField] private Vector2 anchorPosition = new Vector2(0f, 4f);
-        [SerializeField] private float maxFanAngle = 10f;
-        [SerializeField] private float selectedLift = 24f;
+        [SerializeField] private Vector2 cardSize = new Vector2(136f, 198f);
+        [SerializeField] private float cardSpacing = -54f;
+        [SerializeField] private Vector2 anchorPosition = new Vector2(0f, 30f);
+        [SerializeField] private float maxFanAngle = 12f;
+        [SerializeField] private float selectedLift = 38f;
+        [SerializeField] private float fanCurve = 24f;
 
         [Header("Texto")]
-        [SerializeField] private int nameFontSize = 14;
-        [SerializeField] private int statsFontSize = 10;
+        [SerializeField] private int nameFontSize = 15;
+        [SerializeField] private int statsFontSize = 11;
         [SerializeField] private int typeFontSize = 10;
 
         private RectTransform root;
@@ -49,6 +53,7 @@ namespace CardGame.UI
             }
 
             defaultFont = ResponsiveUIUtility.GetDefaultFont();
+
             CreateCanvas();
             CreateHandRoot();
         }
@@ -56,6 +61,23 @@ namespace CardGame.UI
         private void Update()
         {
             RefreshIfNeeded();
+
+            if (updateLayoutEveryFrame)
+            {
+                ApplyRuntimeLayout();
+            }
+
+            RefreshCardTransforms();
+        }
+
+        private void OnValidate()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            ApplyRuntimeLayout();
             RefreshCardTransforms();
         }
 
@@ -75,12 +97,30 @@ namespace CardGame.UI
             handRoot.anchorMax = new Vector2(0.5f, 0f);
             handRoot.pivot = new Vector2(0.5f, 0f);
             handRoot.anchoredPosition = anchorPosition;
-            handRoot.sizeDelta = new Vector2(760f, 220f);
+            handRoot.sizeDelta = new Vector2(900f, 300f);
+        }
+
+        private void ApplyRuntimeLayout()
+        {
+            if (handRoot == null || root == null)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
+            handRoot.anchoredPosition = anchorPosition;
+            handRoot.sizeDelta = new Vector2(Mathf.Max(600f, root.rect.width), Mathf.Max(240f, root.rect.height + 130f));
+
+            for (int i = 0; i < spawnedCards.Count; i++)
+            {
+                spawnedCards[i].SetSize(cardSize);
+            }
         }
 
         private void RefreshIfNeeded()
         {
-            if (battleManager == null || battleManager.PlayerState == null)
+            if (battleManager == null || battleManager.PlayerState == null || battleManager.PlayerState.Hand == null)
             {
                 return;
             }
@@ -110,11 +150,17 @@ namespace CardGame.UI
                 spawnedCards.Add(cardUI);
             }
 
+            ApplyRuntimeLayout();
             RefreshCardTransforms();
         }
 
         private void ClearHand()
         {
+            if (handRoot == null)
+            {
+                return;
+            }
+
             for (int i = handRoot.childCount - 1; i >= 0; i--)
             {
                 Destroy(handRoot.GetChild(i).gameObject);
@@ -148,20 +194,21 @@ namespace CardGame.UI
 
             VerticalLayoutGroup vertical = cardObject.AddComponent<VerticalLayoutGroup>();
             vertical.padding = new RectOffset(10, 10, 12, 10);
-            vertical.spacing = 4;
+            vertical.spacing = 5;
             vertical.childAlignment = TextAnchor.MiddleCenter;
             vertical.childControlWidth = true;
             vertical.childControlHeight = false;
             vertical.childForceExpandWidth = true;
             vertical.childForceExpandHeight = false;
 
-            Text costText = CreateText(cardObject.transform, "Cost", typeFontSize + 2, FontStyle.Bold, 24f);
-            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 52f);
-            Text typeText = CreateText(cardObject.transform, "Type", typeFontSize, FontStyle.Italic, 24f);
-            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 70f);
+            Text costText = CreateText(cardObject.transform, "Cost", typeFontSize + 3, FontStyle.Bold, 26f);
+            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 58f);
+            Text typeText = CreateText(cardObject.transform, "Type", typeFontSize, FontStyle.Italic, 30f);
+            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 76f);
 
             HandCardUI cardUI = new HandCardUI(rect, background, costText, nameText, typeText, statsText);
             cardUI.SetCard(card);
+            cardUI.SetSize(cardSize);
 
             return cardUI;
         }
@@ -185,7 +232,7 @@ namespace CardGame.UI
             text.text = string.Empty;
 
             RectTransform rect = textObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(cardSize.x - 18f, height);
+            rect.sizeDelta = new Vector2(cardSize.x - 20f, height);
 
             return text;
         }
@@ -207,7 +254,7 @@ namespace CardGame.UI
                 float normalized = count <= 1 ? 0f : centeredIndex / ((count - 1) * 0.5f);
 
                 float x = centeredIndex * step;
-                float curveY = -Mathf.Abs(normalized) * 18f;
+                float curveY = -Mathf.Abs(normalized) * fanCurve;
                 float rotation = -normalized * maxFanAngle;
 
                 if (i == lastHoveredIndex)
@@ -222,7 +269,7 @@ namespace CardGame.UI
 
         private void HandleCardClicked(int handIndex)
         {
-            if (battleManager == null || battleManager.PlayerState == null)
+            if (battleManager == null || battleManager.PlayerState == null || battleManager.PlayerState.Hand == null)
             {
                 return;
             }
@@ -240,7 +287,7 @@ namespace CardGame.UI
 
             if (cardPreviewUI == null)
             {
-                Debug.LogWarning("CardPreviewUI não encontrado na cena.");
+                Debug.LogWarning("CardPreviewUI não encontrado na cena. Jogada bloqueada para evitar clique acidental.");
                 return;
             }
 
@@ -275,7 +322,7 @@ namespace CardGame.UI
                     break;
 
                 case CardType.Equipment:
-                    Debug.Log($"Sistema de equipamento ainda não foi implementado. {card.CardName} não foi jogada.");
+                    Debug.Log($"Sistema de equipamento ainda está guardado na gaveta. {card.CardName} não foi jogada.");
                     break;
 
                 default:
@@ -286,7 +333,7 @@ namespace CardGame.UI
 
         private void TryPlayCreature(CardRuntime card)
         {
-            if (!battleManager.PlayerState.Board.HasFreeCreatureSlot())
+            if (battleManager.PlayerState.Board == null || !battleManager.PlayerState.Board.HasFreeCreatureSlot())
             {
                 Debug.Log("Não há slot livre para colocar criatura.");
                 return;
@@ -304,7 +351,7 @@ namespace CardGame.UI
 
         private void TrySetTrap(CardRuntime card)
         {
-            if (!battleManager.PlayerState.Board.HasFreeTrapSlot())
+            if (battleManager.PlayerState.Board == null || !battleManager.PlayerState.Board.HasFreeTrapSlot())
             {
                 Debug.Log("Não há slot livre para preparar armadilha.");
                 return;
@@ -329,7 +376,7 @@ namespace CardGame.UI
 
         private void RefreshCardTextsOnly()
         {
-            if (battleManager == null || battleManager.PlayerState == null)
+            if (battleManager == null || battleManager.PlayerState == null || battleManager.PlayerState.Hand == null)
             {
                 return;
             }
@@ -368,13 +415,7 @@ namespace CardGame.UI
             private readonly Text typeText;
             private readonly Text statsText;
 
-            public HandCardUI(
-                RectTransform rectTransform,
-                Image background,
-                Text costText,
-                Text nameText,
-                Text typeText,
-                Text statsText)
+            public HandCardUI(RectTransform rectTransform, Image background, Text costText, Text nameText, Text typeText, Text statsText)
             {
                 this.rectTransform = rectTransform;
                 this.background = background;
@@ -382,6 +423,11 @@ namespace CardGame.UI
                 this.nameText = nameText;
                 this.typeText = typeText;
                 this.statsText = statsText;
+            }
+
+            public void SetSize(Vector2 size)
+            {
+                rectTransform.sizeDelta = size;
             }
 
             public void SetTransform(Vector2 anchoredPosition, float rotationZ, int siblingIndex)
@@ -427,12 +473,12 @@ namespace CardGame.UI
                     return "Carta";
                 }
 
-                if (value.Length <= 16)
+                if (value.Length <= 18)
                 {
                     return value;
                 }
 
-                return value.Substring(0, 16) + "...";
+                return value.Substring(0, 18) + "...";
             }
 
             private string ShortDescription(string value)
@@ -442,12 +488,12 @@ namespace CardGame.UI
                     return "Toque para ver.";
                 }
 
-                if (value.Length <= 40)
+                if (value.Length <= 45)
                 {
                     return value;
                 }
 
-                return value.Substring(0, 40) + "...";
+                return value.Substring(0, 45) + "...";
             }
         }
     }

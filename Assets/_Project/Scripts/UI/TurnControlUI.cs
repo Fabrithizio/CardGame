@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/TurnControlUI.cs
-// Descrição: Botão principal do turno dentro da zona TurnButton.
+// Descrição: Botão principal do turno, mais compacto e centralizado dentro da zona TurnButton.
 
 using CardGame.Battle;
 using UnityEngine;
@@ -12,6 +12,10 @@ namespace CardGame.UI
         [Header("Referência")]
         [SerializeField] private BattleManager battleManager;
 
+        [Header("Layout")]
+        [SerializeField] private bool updateLayoutEveryFrame = true;
+        [SerializeField] private Vector2 maxButtonSize = new Vector2(150f, 150f);
+
         [Header("Texto")]
         [SerializeField] private int fontSize = 18;
 
@@ -19,6 +23,8 @@ namespace CardGame.UI
         [SerializeField] private Color buttonColor = new Color(0.10f, 0.42f, 0.86f, 0.96f);
         [SerializeField] private Color disabledColor = new Color(0.18f, 0.18f, 0.20f, 0.68f);
 
+        private RectTransform zoneRect;
+        private RectTransform buttonRect;
         private GameObject buttonObject;
         private Button nextPhaseButton;
         private Text nextPhaseButtonText;
@@ -37,21 +43,36 @@ namespace CardGame.UI
 
         private void Update()
         {
+            if (updateLayoutEveryFrame)
+            {
+                ApplyRuntimeLayout();
+            }
+
             Refresh();
+        }
+
+        private void OnValidate()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            ApplyRuntimeLayout();
         }
 
         private void CreateButton()
         {
             BattleScreenLayoutUI layout = BattleScreenLayoutUI.GetOrCreate();
+            zoneRect = layout.GetZone(BattleScreenZone.TurnButton);
 
             buttonObject = new GameObject("Next Phase Button");
-            buttonObject.transform.SetParent(layout.GetZone(BattleScreenZone.TurnButton), false);
+            buttonObject.transform.SetParent(zoneRect, false);
 
-            RectTransform rect = buttonObject.AddComponent<RectTransform>();
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
+            buttonRect = buttonObject.AddComponent<RectTransform>();
+            buttonRect.anchorMin = new Vector2(0.5f, 0.5f);
+            buttonRect.anchorMax = new Vector2(0.5f, 0.5f);
+            buttonRect.pivot = new Vector2(0.5f, 0.5f);
 
             Image background = buttonObject.AddComponent<Image>();
             background.color = buttonColor;
@@ -81,8 +102,26 @@ namespace CardGame.UI
             RectTransform textRect = textObject.GetComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+            textRect.offsetMin = new Vector2(8f, 8f);
+            textRect.offsetMax = new Vector2(-8f, -8f);
+
+            ApplyRuntimeLayout();
+        }
+
+        private void ApplyRuntimeLayout()
+        {
+            if (buttonRect == null || zoneRect == null)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
+            float size = Mathf.Min(zoneRect.rect.width, zoneRect.rect.height, maxButtonSize.x, maxButtonSize.y);
+            size = Mathf.Max(76f, size);
+
+            buttonRect.sizeDelta = new Vector2(size, size);
+            buttonRect.anchoredPosition = Vector2.zero;
         }
 
         private void HandleNextPhaseClicked()
@@ -97,7 +136,7 @@ namespace CardGame.UI
 
         private void Refresh()
         {
-            if (battleManager == null || battleManager.TurnManager == null || nextPhaseButton == null)
+            if (battleManager == null || battleManager.TurnManager == null || nextPhaseButton == null || buttonObject == null)
             {
                 return;
             }
