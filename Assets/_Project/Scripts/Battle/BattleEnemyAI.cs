@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/Battle/BattleEnemyAI.cs
-// Descrição: IA temporária do inimigo para testes. Ela joga a primeira criatura possível, ataca criaturas inimigas ou ataca diretamente se o jogador estiver sem criaturas.
+// Descrição: IA temporária do inimigo para testes. Ela joga criatura, prepara armadilha quando possível, ataca criaturas inimigas ou ataca diretamente se o jogador estiver sem criaturas.
 
 using System.Collections.Generic;
 using CardGame.Cards;
@@ -16,23 +16,22 @@ namespace CardGame.Battle
                 return;
             }
 
-            for (int i = 0; i < enemyState.Hand.Count; i++)
+            bool playedAnyCard = false;
+
+            if (TryPlayFirstCreature(enemyState))
             {
-                CardRuntime card = enemyState.Hand.GetCardAt(i);
-
-                if (card == null || card.CardType != CardType.Creature)
-                {
-                    continue;
-                }
-
-                if (enemyState.TryPlayCreatureInFirstFreeSlot(card, out int slotIndex))
-                {
-                    Debug.Log($"IA colocou {card.CardName} no slot {slotIndex + 1}.");
-                    return;
-                }
+                playedAnyCard = true;
             }
 
-            Debug.Log("IA não encontrou criatura para jogar.");
+            if (TrySetFirstTrap(enemyState))
+            {
+                playedAnyCard = true;
+            }
+
+            if (!playedAnyCard)
+            {
+                Debug.Log("IA não encontrou carta jogável para a fase principal.");
+            }
         }
 
         public void ExecuteBattlePhase(
@@ -64,6 +63,48 @@ namespace CardGame.Battle
 
             Debug.Log($"IA escolheu {attacker.CardName} para atacar diretamente o jogador.");
             battleManager.ResolveDirectAttack(attacker, playerState);
+        }
+
+        private bool TryPlayFirstCreature(PlayerBattleState enemyState)
+        {
+            for (int i = 0; i < enemyState.Hand.Count; i++)
+            {
+                CardRuntime card = enemyState.Hand.GetCardAt(i);
+
+                if (card == null || card.CardType != CardType.Creature)
+                {
+                    continue;
+                }
+
+                if (enemyState.TryPlayCreatureInFirstFreeSlot(card, out int slotIndex))
+                {
+                    Debug.Log($"IA colocou {card.CardName} no slot de criatura {slotIndex + 1}.");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TrySetFirstTrap(PlayerBattleState enemyState)
+        {
+            for (int i = 0; i < enemyState.Hand.Count; i++)
+            {
+                CardRuntime card = enemyState.Hand.GetCardAt(i);
+
+                if (card == null || card.CardType != CardType.Trap)
+                {
+                    continue;
+                }
+
+                if (enemyState.TrySetTrapInFirstFreeSlot(card, out int slotIndex))
+                {
+                    Debug.Log($"IA preparou uma armadilha oculta no slot {slotIndex + 1}.");
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private CardRuntime GetFirstCreatureThatCanAttack(PlayerBattleState state)

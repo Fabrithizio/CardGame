@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0767b552486cca94ea4558d6ee2e48f6, type: 3}
+  m_Name: Creature_Luvy
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.Cards.CardData
+  cardId: 37c75309-9fa6-41d1-a506-afd9d75edf89
+  cardName: Luvy
+  description: "Esp\xEDrito aqu\xE1tico de suporte e prote\xE7\xE3o."
+  artwork: {fileID: 0}
+  cardType: 0
+  rarity: 1
+  cost: 3
+  attack: 2
+  health: 8
+  speed: 6
+  defense: 3
+  focus: 3
+  resistance: 4
+  canAttackDirectly: 0
+  hasTaunt: 0
+  hasPiercing: 0
+  hasLifeSteal: 0
+  hasRetaliation: 0
+  hasShield: 0
+  trapTriggerType: 0
+  trapEffectType: 0
+  trapEffectValue: 0

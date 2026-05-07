@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0767b552486cca94ea4558d6ee2e48f6, type: 3}
+  m_Name: Spell_Florescer_Da_Loucura
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.Cards.CardData
+  cardId: cd7b5723-5187-41aa-b160-376168e43690
+  cardName: Florescer da Loucura
+  description: "Magia de a\xE7\xE3o: criatura inimiga perde 3 Speed e 2 Focus temporariamente."
+  artwork: {fileID: 0}
+  cardType: 1
+  rarity: 1
+  cost: 3
+  attack: 0
+  health: 0
+  speed: 0
+  defense: 0
+  focus: 0
+  resistance: 0
+  canAttackDirectly: 0
+  hasTaunt: 0
+  hasPiercing: 0
+  hasLifeSteal: 0
+  hasRetaliation: 0
+  hasShield: 0
+  trapTriggerType: 0
+  trapEffectType: 0
+  trapEffectValue: 0

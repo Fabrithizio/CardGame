@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/TurnControlUI.cs
-// Descrição: Cria botões temporários de controle de turno/fase para mobile. O botão some quando a batalha termina.
+// Descrição: Botão principal do turno dentro da zona TurnButton.
 
 using CardGame.Battle;
 using UnityEngine;
@@ -12,19 +12,13 @@ namespace CardGame.UI
         [Header("Referência")]
         [SerializeField] private BattleManager battleManager;
 
-        [Header("Layout")]
-        [SerializeField] private Vector2 buttonSize = new Vector2(170f, 52f);
-        [SerializeField] private Vector2 anchorPosition = new Vector2(-26f, 36f);
-
         [Header("Texto")]
         [SerializeField] private int fontSize = 18;
 
         [Header("Cores")]
-        [SerializeField] private Color buttonColor = new Color(0.12f, 0.42f, 0.78f, 0.95f);
-        [SerializeField] private Color disabledColor = new Color(0.12f, 0.12f, 0.12f, 0.55f);
+        [SerializeField] private Color buttonColor = new Color(0.10f, 0.42f, 0.86f, 0.96f);
+        [SerializeField] private Color disabledColor = new Color(0.18f, 0.18f, 0.20f, 0.68f);
 
-        private Canvas canvas;
-        private RectTransform root;
         private GameObject buttonObject;
         private Button nextPhaseButton;
         private Text nextPhaseButtonText;
@@ -37,15 +31,8 @@ namespace CardGame.UI
                 battleManager = FindFirstObjectByType<BattleManager>();
             }
 
-            defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (defaultFont == null)
-            {
-                defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
-            }
-
-            CreateCanvas();
-            CreateButtons();
+            defaultFont = ResponsiveUIUtility.GetDefaultFont();
+            CreateButton();
         }
 
         private void Update()
@@ -53,43 +40,25 @@ namespace CardGame.UI
             Refresh();
         }
 
-        private void CreateCanvas()
+        private void CreateButton()
         {
-            GameObject canvasObject = new GameObject("Turn Control UI Canvas");
-            canvasObject.transform.SetParent(transform, false);
+            BattleScreenLayoutUI layout = BattleScreenLayoutUI.GetOrCreate();
 
-            canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 50;
-
-            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            canvasObject.AddComponent<GraphicRaycaster>();
-
-            root = canvasObject.GetComponent<RectTransform>();
-            root.anchorMin = Vector2.zero;
-            root.anchorMax = Vector2.one;
-            root.offsetMin = Vector2.zero;
-            root.offsetMax = Vector2.zero;
-        }
-
-        private void CreateButtons()
-        {
             buttonObject = new GameObject("Next Phase Button");
-            buttonObject.transform.SetParent(root, false);
+            buttonObject.transform.SetParent(layout.GetZone(BattleScreenZone.TurnButton), false);
 
             RectTransform rect = buttonObject.AddComponent<RectTransform>();
-            rect.anchorMin = new Vector2(1f, 0f);
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(1f, 0f);
-            rect.anchoredPosition = anchorPosition;
-            rect.sizeDelta = buttonSize;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
 
             Image background = buttonObject.AddComponent<Image>();
             background.color = buttonColor;
+
+            Outline outline = buttonObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.75f);
+            outline.effectDistance = new Vector2(3f, -3f);
 
             nextPhaseButton = buttonObject.AddComponent<Button>();
             nextPhaseButton.targetGraphic = background;
@@ -104,7 +73,10 @@ namespace CardGame.UI
             nextPhaseButtonText.fontStyle = FontStyle.Bold;
             nextPhaseButtonText.alignment = TextAnchor.MiddleCenter;
             nextPhaseButtonText.color = Color.white;
-            nextPhaseButtonText.text = "Avançar";
+            nextPhaseButtonText.resizeTextForBestFit = true;
+            nextPhaseButtonText.resizeTextMinSize = 10;
+            nextPhaseButtonText.resizeTextMaxSize = fontSize;
+            nextPhaseButtonText.text = "Principal";
 
             RectTransform textRect = textObject.GetComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
@@ -141,9 +113,7 @@ namespace CardGame.UI
             bool isPlayerTurn = battleManager.TurnManager.IsPlayerTurn;
             nextPhaseButton.interactable = isPlayerTurn;
 
-            Image image = nextPhaseButton.targetGraphic as Image;
-
-            if (image != null)
+            if (nextPhaseButton.targetGraphic is Image image)
             {
                 image.color = isPlayerTurn ? buttonColor : disabledColor;
             }
@@ -155,20 +125,20 @@ namespace CardGame.UI
         {
             if (battleManager == null || battleManager.TurnManager == null)
             {
-                return "Avançar";
+                return "Principal";
             }
 
             BattlePhase phase = battleManager.TurnManager.CurrentPhase;
 
             return phase switch
             {
-                BattlePhase.StartTurn => "Comprar",
+                BattlePhase.StartTurn => "Principal",
                 BattlePhase.Draw => "Principal",
                 BattlePhase.Main => "Batalha",
                 BattlePhase.Battle => "Encerrar",
                 BattlePhase.EndTurn => "Passar",
                 BattlePhase.Finished => "Fim",
-                _ => "Avançar"
+                _ => "Principal"
             };
         }
     }

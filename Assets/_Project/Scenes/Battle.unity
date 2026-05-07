@@ -119,6 +119,54 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &34823255
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 34823257}
+  - component: {fileID: 34823256}
+  m_Layer: 0
+  m_Name: BattleScreenLayoutUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &34823256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34823255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca65c1696913e664e8f97b35efd56ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleScreenLayoutUI
+  sortingOrder: 0
+  referenceResolution: {x: 1080, y: 2400}
+  matchWidthOrHeight: 0.65
+  showDebugZoneNames: 0
+--- !u!4 &34823257
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34823255}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &74176003
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,10 +197,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.MythicLoadoutUI
   battleManager: {fileID: 1177670537}
-  dotSize: {x: 34, y: 34}
-  dotSpacing: 14
-  enemyAnchorPosition: {x: -22, y: -170}
-  playerAnchorPosition: {x: -22, y: 170}
+  iconSize: {x: 92, y: 92}
+  iconSpacing: 22
   playerAvailableColor: {r: 1, g: 0.84, b: 0.2, a: 0.95}
   playerUsedColor: {r: 0.12, g: 0.12, b: 0.12, a: 0.75}
   playerEmptyColor: {r: 0.1, g: 0.1, b: 0.1, a: 0.3}
@@ -166,6 +212,122 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 74176003}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &302638997
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 302638999}
+  - component: {fileID: 302638998}
+  m_Layer: 0
+  m_Name: BattleCombatCenterUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &302638998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302638997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e122d7a824b52fe44bbf79917d3b8ef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleCombatCenterUI
+  battleManager: {fileID: 0}
+  panelSize: {x: 860, y: 120}
+  anchorPosition: {x: 0, y: 40}
+  titleFontSize: 24
+  subtitleFontSize: 16
+  damageFontSize: 34
+  visibleDuration: 1.55
+  fadeDuration: 0.25
+  panelColor: {r: 0.015, g: 0.018, b: 0.035, a: 0.76}
+  titleColor: {r: 1, g: 0.92, b: 0.72, a: 1}
+  subtitleColor: {r: 0.9, g: 0.94, b: 1, a: 0.92}
+  damageColor: {r: 1, g: 0.24, b: 0.24, a: 1}
+  healColor: {r: 0.28, g: 1, b: 0.45, a: 1}
+  mythicColor: {r: 0.94, g: 0.42, b: 1, a: 1}
+--- !u!4 &302638999
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302638997}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &405369683
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 405369685}
+  - component: {fileID: 405369684}
+  m_Layer: 0
+  m_Name: CardPreviewUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &405369684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405369683}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de1263efb3d0b2d42bfd1f473099249c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.CardPreviewUI
+  battleManager: {fileID: 1177670537}
+  panelSize: {x: 740, y: 1120}
+  buttonSize: {x: 260, y: 76}
+  titleFontSize: 34
+  infoFontSize: 20
+  descriptionFontSize: 18
+  buttonFontSize: 22
+  overlayColor: {r: 0, g: 0, b: 0, a: 0.58}
+  creatureColor: {r: 0.1, g: 0.28, b: 0.62, a: 0.98}
+  spellColor: {r: 0.35, g: 0.16, b: 0.62, a: 0.98}
+  trapColor: {r: 0.68, g: 0.35, b: 0.1, a: 0.98}
+  equipmentColor: {r: 0.42, g: 0.42, b: 0.42, a: 0.98}
+  playButtonColor: {r: 0.12, g: 0.48, b: 0.22, a: 0.98}
+  closeButtonColor: {r: 0.45, g: 0.12, b: 0.12, a: 0.98}
+--- !u!4 &405369685
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405369683}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -204,18 +366,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleBoardUI
   battleManager: {fileID: 1177670537}
-  cardSize: {x: 125, y: 175}
-  cardSpacing: 10
-  enemyCreatureRowY: -70
-  playerCreatureRowY: 135
-  trapSize: {x: 92, y: 42}
-  trapSpacing: 8
-  enemyTrapRowY: -245
-  playerTrapRowY: -55
-  nameFontSize: 13
+  cardSize: {x: 178, y: 238}
+  cardSpacing: 6
+  trapSize: {x: 178, y: 86}
+  trapSpacing: 7
+  nameFontSize: 15
   statsFontSize: 12
-  statusFontSize: 10
-  trapFontSize: 10
+  statusFontSize: 9
+  trapFontSize: 12
   selectedColor: {r: 0.15, g: 0.85, b: 1, a: 0.95}
 --- !u!4 &427482259
 Transform:
@@ -224,6 +382,54 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 427482257}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &469351184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 469351186}
+  - component: {fileID: 469351185}
+  m_Layer: 0
+  m_Name: BattleLogUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &469351185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469351184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72ee56f8597469b40b35aad02b0f87e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleLogUI
+  fontSize: 11
+  maxVisibleLines: 3
+  panelColor: {r: 0.05, g: 0.05, b: 0.05, a: 0.55}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!4 &469351186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469351184}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -453,6 +659,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &763017488
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 763017490}
+  - component: {fileID: 763017489}
+  m_Layer: 0
+  m_Name: TurnStatusUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &763017489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763017488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 294ec9d22a749f54db967ee32bf29aeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.TurnStatusUI
+  battleManager: {fileID: 1177670537}
+  fontSize: 16
+  playerTurnColor: {r: 0.1, g: 0.32, b: 0.72, a: 0.92}
+  enemyTurnColor: {r: 0.62, g: 0.16, b: 0.18, a: 0.92}
+  finishedColor: {r: 0.12, g: 0.12, b: 0.12, a: 0.92}
+--- !u!4 &763017490
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763017488}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &862795939
 GameObject:
   m_ObjectHideFlags: 0
@@ -483,10 +738,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.PlayerHandUI
   battleManager: {fileID: 1177670537}
-  cardSize: {x: 95, y: 135}
-  cardSpacing: 6
-  anchorPosition: {x: 0, y: 20}
-  nameFontSize: 12
+  cardPreviewUI: {fileID: 405369684}
+  useMobileLayoutPreset: 1
+  cardSize: {x: 138, y: 198}
+  cardSpacing: -54
+  anchorPosition: {x: 0, y: 34}
+  maxFanAngle: 12
+  selectedLift: 26
+  nameFontSize: 13
   statsFontSize: 10
   typeFontSize: 9
 --- !u!4 &862795941
@@ -613,9 +872,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.TurnControlUI
   battleManager: {fileID: 1177670537}
-  buttonSize: {x: 170, y: 52}
-  anchorPosition: {x: -26, y: 36}
-  fontSize: 18
+  fontSize: 16
   buttonColor: {r: 0.12, g: 0.42, b: 0.78, a: 0.95}
   disabledColor: {r: 0.12, g: 0.12, b: 0.12, a: 0.55}
 --- !u!4 &1096583061
@@ -663,9 +920,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleResultUI
   battleManager: {fileID: 1177670537}
-  panelSize: {x: 520, y: 300}
+  panelSize: {x: 640, y: 360}
   titleFontSize: 46
-  subtitleFontSize: 20
+  subtitleFontSize: 22
   buttonFontSize: 22
   victoryColor: {r: 0.1, g: 0.48, b: 0.2, a: 0.94}
   defeatColor: {r: 0.58, g: 0.1, b: 0.12, a: 0.94}
@@ -718,26 +975,47 @@ MonoBehaviour:
   enemyStartingHealth: 4
   startingHandSize: 5
   playerDeckCards:
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 075dbddc7998181439e2d0e9636f729f, type: 2}
+  - {fileID: 11400000, guid: 075dbddc7998181439e2d0e9636f729f, type: 2}
+  - {fileID: 11400000, guid: 075dbddc7998181439e2d0e9636f729f, type: 2}
+  - {fileID: 11400000, guid: a0f4c8fa38757a54fa0e81456b7f794c, type: 2}
+  - {fileID: 11400000, guid: a0f4c8fa38757a54fa0e81456b7f794c, type: 2}
+  - {fileID: 11400000, guid: 44625c0642eb3f247a9f774979eace92, type: 2}
+  - {fileID: 11400000, guid: 44625c0642eb3f247a9f774979eace92, type: 2}
+  - {fileID: 11400000, guid: 0984e4415cca34445859ab4eedbf0331, type: 2}
+  - {fileID: 11400000, guid: 7f5431d1a23fbca488773e6613c1e47a, type: 2}
+  - {fileID: 11400000, guid: da98455d38bd072488d0b585ef6af81d, type: 2}
+  - {fileID: 11400000, guid: da98455d38bd072488d0b585ef6af81d, type: 2}
+  - {fileID: 11400000, guid: 1655dbb2d76da694385247c105ab9485, type: 2}
+  - {fileID: 11400000, guid: cd6a8e9b19ab449499ce10fece1fc16a, type: 2}
+  - {fileID: 11400000, guid: 689f704a82c593249a0d2ab94eaed28a, type: 2}
+  - {fileID: 11400000, guid: 5fb08135a25041b46a094d7931a47ae9, type: 2}
+  - {fileID: 11400000, guid: 5fb08135a25041b46a094d7931a47ae9, type: 2}
+  - {fileID: 11400000, guid: 57dff9e9c5e3c9b4ea3b37d1d46cdd26, type: 2}
   enemyDeckCards:
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: cbe7dfb128c4b6142aa32b22229e34fb, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
-  - {fileID: 11400000, guid: 43bee79af920c3c4a854cc01a79b85ee, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: 57d16cfedf078a545b29ae97bd7668f7, type: 2}
+  - {fileID: 11400000, guid: a0f4c8fa38757a54fa0e81456b7f794c, type: 2}
+  - {fileID: 11400000, guid: a0f4c8fa38757a54fa0e81456b7f794c, type: 2}
+  - {fileID: 11400000, guid: a0f4c8fa38757a54fa0e81456b7f794c, type: 2}
+  - {fileID: 11400000, guid: 44625c0642eb3f247a9f774979eace92, type: 2}
+  - {fileID: 11400000, guid: 44625c0642eb3f247a9f774979eace92, type: 2}
+  - {fileID: 11400000, guid: 0984e4415cca34445859ab4eedbf0331, type: 2}
+  - {fileID: 11400000, guid: 0984e4415cca34445859ab4eedbf0331, type: 2}
+  - {fileID: 11400000, guid: 7f5431d1a23fbca488773e6613c1e47a, type: 2}
+  - {fileID: 11400000, guid: 191fffbb3ff3bde42ba3296dc841ca32, type: 2}
+  - {fileID: 11400000, guid: da98455d38bd072488d0b585ef6af81d, type: 2}
+  - {fileID: 11400000, guid: da98455d38bd072488d0b585ef6af81d, type: 2}
+  - {fileID: 11400000, guid: cd6a8e9b19ab449499ce10fece1fc16a, type: 2}
+  - {fileID: 11400000, guid: 689f704a82c593249a0d2ab94eaed28a, type: 2}
+  - {fileID: 11400000, guid: 5fb08135a25041b46a094d7931a47ae9, type: 2}
+  - {fileID: 11400000, guid: 5fb08135a25041b46a094d7931a47ae9, type: 2}
+  - {fileID: 11400000, guid: 57dff9e9c5e3c9b4ea3b37d1d46cdd26, type: 2}
   playerMythics:
   - {fileID: 11400000, guid: e9ed4653ea0e31c4f932839ee1cac598, type: 2}
   enemyMythics:
@@ -791,12 +1069,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.PlayerHealthUI
   battleManager: {fileID: 1177670537}
-  panelSize: {x: 190, y: 54}
-  playerAnchorPosition: {x: 22, y: 22}
-  enemyAnchorPosition: {x: 22, y: -22}
-  fontSize: 18
-  playerColor: {r: 0.1, g: 0.32, b: 0.72, a: 0.92}
-  enemyColor: {r: 0.62, g: 0.16, b: 0.18, a: 0.92}
+  nameFontSize: 12
+  valueFontSize: 10
+  playerPanelColor: {r: 0.02, g: 0.08, b: 0.18, a: 0.8}
+  enemyPanelColor: {r: 0.16, g: 0.04, b: 0.08, a: 0.8}
+  healthColor: {r: 0.84, g: 0.08, b: 0.1, a: 0.96}
+  energyColor: {r: 0.1, g: 0.46, b: 1, a: 0.96}
+  emptyBarColor: {r: 0.03, g: 0.03, b: 0.04, a: 0.72}
 --- !u!4 &1214635862
 Transform:
   m_ObjectHideFlags: 0
@@ -877,7 +1156,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1580323561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -910,6 +1189,158 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1839373480
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1839373482}
+  - component: {fileID: 1839373481}
+  m_Layer: 0
+  m_Name: BattleBoardSkinUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1839373481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839373480}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff5c0d89bef8d314486466c0149f30d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleBoardSkinUI
+  enemyBoardColor: {r: 0.1, g: 0.07, b: 0.1, a: 0.35}
+  playerBoardColor: {r: 0.05, g: 0.1, b: 0.18, a: 0.35}
+  trapColor: {r: 0.04, g: 0.04, b: 0.06, a: 0.52}
+  combatColor: {r: 0.02, g: 0.04, b: 0.1, a: 0.88}
+  bottomColor: {r: 0.04, g: 0.1, b: 0.18, a: 0.92}
+  lineColor: {r: 0.95, g: 0.78, b: 0.36, a: 0.26}
+  labelFontSize: 16
+--- !u!4 &1839373482
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839373480}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1895502256
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1895502258}
+  - component: {fileID: 1895502257}
+  m_Layer: 0
+  m_Name: MythicActivationBannerUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1895502257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895502256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05c2c24fd45e57e44ae41923e4000335, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.MythicActivationBannerUI
+  panelSize: {x: 760, y: 136}
+  anchorPosition: {x: 0, y: 72}
+  visibleDuration: 1.35
+  titleFontSize: 30
+  subtitleFontSize: 17
+  panelColor: {r: 0.1, g: 0.04, b: 0.18, a: 0.92}
+  titleColor: {r: 1, g: 0.85, b: 0.22, a: 1}
+  subtitleColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!4 &1895502258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895502256}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2122121078
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2122121080}
+  - component: {fileID: 2122121079}
+  m_Layer: 0
+  m_Name: DeckCounterUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2122121079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2122121078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c18fe659ce2c734aaca676b6483e095, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.DeckCounterUI
+  battleManager: {fileID: 1177670537}
+  labelFontSize: 7
+  valueFontSize: 11
+  playerColor: {r: 0.08, g: 0.22, b: 0.5, a: 0.88}
+  enemyColor: {r: 0.48, g: 0.12, b: 0.14, a: 0.88}
+--- !u!4 &2122121080
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2122121078}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -926,3 +1357,11 @@ SceneRoots:
   - {fileID: 1096583061}
   - {fileID: 1214635862}
   - {fileID: 1100968013}
+  - {fileID: 2122121080}
+  - {fileID: 763017490}
+  - {fileID: 469351186}
+  - {fileID: 1895502258}
+  - {fileID: 405369685}
+  - {fileID: 302638999}
+  - {fileID: 1839373482}
+  - {fileID: 34823257}

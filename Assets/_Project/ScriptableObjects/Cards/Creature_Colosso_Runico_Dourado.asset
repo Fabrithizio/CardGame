@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0767b552486cca94ea4558d6ee2e48f6, type: 3}
+  m_Name: Creature_Colosso_Runico_Dourado
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.Cards.CardData
+  cardId: b453e68f-91ae-45f4-a43a-4dba60d7ba4b
+  cardName: "Colosso R\xFAnico Dourado"
+  description: Gigante de pedra que segura a linha de frente.
+  artwork: {fileID: 0}
+  cardType: 0
+  rarity: 2
+  cost: 5
+  attack: 5
+  health: 10
+  speed: 2
+  defense: 6
+  focus: 1
+  resistance: 3
+  canAttackDirectly: 0
+  hasTaunt: 1
+  hasPiercing: 0
+  hasLifeSteal: 0
+  hasRetaliation: 0
+  hasShield: 1
+  trapTriggerType: 0
+  trapEffectType: 0
+  trapEffectValue: 0

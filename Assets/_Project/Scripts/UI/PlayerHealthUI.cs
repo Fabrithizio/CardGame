@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/PlayerHealthUI.cs
-// Descrição: Mostra a vida e energia do jogador e do inimigo na tela durante a batalha.
+// Descrição: Barras de vida/energia dentro das zonas EnemyHealth e PlayerHealth, com proteção contra estado nulo.
 
 using CardGame.Battle;
 using UnityEngine;
@@ -12,24 +12,21 @@ namespace CardGame.UI
         [Header("Referência")]
         [SerializeField] private BattleManager battleManager;
 
-        [Header("Layout")]
-        [SerializeField] private Vector2 panelSize = new Vector2(230f, 66f);
-        [SerializeField] private Vector2 playerAnchorPosition = new Vector2(22f, 22f);
-        [SerializeField] private Vector2 enemyAnchorPosition = new Vector2(22f, -22f);
-
         [Header("Texto")]
-        [SerializeField] private int fontSize = 16;
+        [SerializeField] private int nameFontSize = 14;
+        [SerializeField] private int valueFontSize = 12;
 
         [Header("Cores")]
-        [SerializeField] private Color playerColor = new Color(0.10f, 0.32f, 0.72f, 0.92f);
-        [SerializeField] private Color enemyColor = new Color(0.62f, 0.16f, 0.18f, 0.92f);
+        [SerializeField] private Color playerPanelColor = new Color(0.02f, 0.08f, 0.18f, 0.88f);
+        [SerializeField] private Color enemyPanelColor = new Color(0.16f, 0.04f, 0.08f, 0.88f);
+        [SerializeField] private Color healthColor = new Color(0.84f, 0.08f, 0.10f, 0.96f);
+        [SerializeField] private Color energyColor = new Color(0.10f, 0.46f, 1f, 0.96f);
+        [SerializeField] private Color emptyBarColor = new Color(0.03f, 0.03f, 0.04f, 0.72f);
 
-        private Canvas canvas;
-        private RectTransform root;
         private Font defaultFont;
-
-        private Text playerHealthText;
-        private Text enemyHealthText;
+        private PlayerHudPanel playerPanel;
+        private PlayerHudPanel enemyPanel;
+        private bool built;
 
         private void Awake()
         {
@@ -38,121 +35,203 @@ namespace CardGame.UI
                 battleManager = FindFirstObjectByType<BattleManager>();
             }
 
-            defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (defaultFont == null)
-            {
-                defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
-            }
-
-            CreateCanvas();
-            CreateHealthPanels();
+            defaultFont = ResponsiveUIUtility.GetDefaultFont();
+            CreatePanels();
         }
 
         private void Update()
         {
+            if (!built)
+            {
+                CreatePanels();
+            }
+
             Refresh();
         }
 
-        private void CreateCanvas()
+        private void CreatePanels()
         {
-            GameObject canvasObject = new GameObject("Player Health UI Canvas");
-            canvasObject.transform.SetParent(transform, false);
+            if (built)
+            {
+                return;
+            }
 
-            canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 45;
+            BattleScreenLayoutUI layout = BattleScreenLayoutUI.GetOrCreate();
 
-            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            enemyPanel = CreatePanel("Enemy Bars", layout.GetZone(BattleScreenZone.EnemyHealth), enemyPanelColor);
+            playerPanel = CreatePanel("Player Bars", layout.GetZone(BattleScreenZone.PlayerHealth), playerPanelColor);
 
-            canvasObject.AddComponent<GraphicRaycaster>();
-
-            root = canvasObject.GetComponent<RectTransform>();
-            root.anchorMin = Vector2.zero;
-            root.anchorMax = Vector2.one;
-            root.offsetMin = Vector2.zero;
-            root.offsetMax = Vector2.zero;
+            built = true;
         }
 
-        private void CreateHealthPanels()
-        {
-            enemyHealthText = CreatePanel(
-                "Enemy Health",
-                new Vector2(0f, 1f),
-                new Vector2(0f, 1f),
-                enemyAnchorPosition,
-                enemyColor,
-                "Inimigo"
-            );
-
-            playerHealthText = CreatePanel(
-                "Player Health",
-                new Vector2(0f, 0f),
-                new Vector2(0f, 0f),
-                playerAnchorPosition,
-                playerColor,
-                "Jogador"
-            );
-        }
-
-        private Text CreatePanel(
-            string objectName,
-            Vector2 anchorMin,
-            Vector2 anchorMax,
-            Vector2 anchoredPosition,
-            Color backgroundColor,
-            string label)
+        private PlayerHudPanel CreatePanel(string objectName, RectTransform parent, Color panelColor)
         {
             GameObject panelObject = new GameObject(objectName);
-            panelObject.transform.SetParent(root, false);
+            panelObject.transform.SetParent(parent, false);
 
             RectTransform rect = panelObject.AddComponent<RectTransform>();
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.pivot = anchorMin;
-            rect.anchoredPosition = anchoredPosition;
-            rect.sizeDelta = panelSize;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
 
             Image background = panelObject.AddComponent<Image>();
-            background.color = backgroundColor;
+            background.color = panelColor;
 
-            GameObject textObject = new GameObject("Text");
-            textObject.transform.SetParent(panelObject.transform, false);
+            Outline outline = panelObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.65f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            VerticalLayoutGroup vertical = panelObject.AddComponent<VerticalLayoutGroup>();
+            vertical.padding = new RectOffset(8, 8, 6, 6);
+            vertical.spacing = 4;
+            vertical.childControlWidth = true;
+            vertical.childControlHeight = false;
+            vertical.childForceExpandWidth = true;
+            vertical.childForceExpandHeight = false;
+
+            Text nameText = CreateText(panelObject.transform, "Name", nameFontSize, FontStyle.Bold, 22f, TextAnchor.MiddleLeft);
+            BarUI healthBar = CreateBar(panelObject.transform, "Health", healthColor);
+            BarUI energyBar = CreateBar(panelObject.transform, "Energy", energyColor);
+
+            return new PlayerHudPanel(nameText, healthBar, energyBar);
+        }
+
+        private Text CreateText(Transform parent, string objectName, int fontSize, FontStyle fontStyle, float height, TextAnchor anchor)
+        {
+            GameObject textObject = new GameObject(objectName);
+            textObject.transform.SetParent(parent, false);
+
+            RectTransform rect = textObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(10f, height);
 
             Text text = textObject.AddComponent<Text>();
             text.font = defaultFont;
             text.fontSize = fontSize;
-            text.fontStyle = FontStyle.Bold;
-            text.alignment = TextAnchor.MiddleCenter;
+            text.fontStyle = fontStyle;
+            text.alignment = anchor;
             text.color = Color.white;
-            text.text = $"{label}: --/--";
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 8;
+            text.resizeTextMaxSize = fontSize;
 
-            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            return text;
+        }
+
+        private BarUI CreateBar(Transform parent, string objectName, Color fillColor)
+        {
+            GameObject barObject = new GameObject(objectName);
+            barObject.transform.SetParent(parent, false);
+
+            RectTransform rect = barObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(10f, 18f);
+
+            Image background = barObject.AddComponent<Image>();
+            background.color = emptyBarColor;
+
+            GameObject fillObject = new GameObject("Fill");
+            fillObject.transform.SetParent(barObject.transform, false);
+
+            RectTransform fillRect = fillObject.AddComponent<RectTransform>();
+            fillRect.anchorMin = new Vector2(0f, 0f);
+            fillRect.anchorMax = new Vector2(1f, 1f);
+            fillRect.pivot = new Vector2(0f, 0.5f);
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+
+            Image fillImage = fillObject.AddComponent<Image>();
+            fillImage.color = fillColor;
+
+            GameObject textObject = new GameObject("Text");
+            textObject.transform.SetParent(barObject.transform, false);
+
+            RectTransform textRect = textObject.AddComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
 
-            return text;
+            Text text = textObject.AddComponent<Text>();
+            text.font = defaultFont;
+            text.fontSize = valueFontSize;
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 7;
+            text.resizeTextMaxSize = valueFontSize;
+
+            return new BarUI(fillRect, text);
         }
 
         private void Refresh()
         {
-            if (battleManager == null || battleManager.PlayerState == null || battleManager.EnemyState == null)
+            if (battleManager == null || playerPanel == null || enemyPanel == null)
             {
                 return;
             }
 
-            playerHealthText.text =
-                $"Jogador: {battleManager.PlayerState.CurrentHealth}/{battleManager.PlayerState.MaxHealth}\n" +
-                $"Energia: {battleManager.PlayerState.CurrentEnergy}/{battleManager.PlayerState.MaxEnergy}";
+            if (battleManager.PlayerState == null || battleManager.EnemyState == null)
+            {
+                return;
+            }
 
-            enemyHealthText.text =
-                $"Inimigo: {battleManager.EnemyState.CurrentHealth}/{battleManager.EnemyState.MaxHealth}\n" +
-                $"Energia: {battleManager.EnemyState.CurrentEnergy}/{battleManager.EnemyState.MaxEnergy}";
+            enemyPanel.SetValues(
+                "Inimigo",
+                battleManager.EnemyState.CurrentHealth,
+                battleManager.EnemyState.MaxHealth,
+                battleManager.EnemyState.CurrentEnergy,
+                battleManager.EnemyState.MaxEnergy);
+
+            playerPanel.SetValues(
+                "Jogador",
+                battleManager.PlayerState.CurrentHealth,
+                battleManager.PlayerState.MaxHealth,
+                battleManager.PlayerState.CurrentEnergy,
+                battleManager.PlayerState.MaxEnergy);
+        }
+
+        private sealed class PlayerHudPanel
+        {
+            private readonly Text nameText;
+            private readonly BarUI healthBar;
+            private readonly BarUI energyBar;
+
+            public PlayerHudPanel(Text nameText, BarUI healthBar, BarUI energyBar)
+            {
+                this.nameText = nameText;
+                this.healthBar = healthBar;
+                this.energyBar = energyBar;
+            }
+
+            public void SetValues(string label, int currentHealth, int maxHealth, int currentEnergy, int maxEnergy)
+            {
+                int safeMaxHealth = Mathf.Max(1, maxHealth);
+                int safeMaxEnergy = Mathf.Max(1, maxEnergy);
+
+                nameText.text = label;
+                healthBar.SetValue(currentHealth, safeMaxHealth, $"HP {currentHealth}/{safeMaxHealth}");
+                energyBar.SetValue(currentEnergy, safeMaxEnergy, $"EN {currentEnergy}/{safeMaxEnergy}");
+            }
+        }
+
+        private sealed class BarUI
+        {
+            private readonly RectTransform fillRect;
+            private readonly Text valueText;
+
+            public BarUI(RectTransform fillRect, Text valueText)
+            {
+                this.fillRect = fillRect;
+                this.valueText = valueText;
+            }
+
+            public void SetValue(int current, int max, string text)
+            {
+                float ratio = max > 0 ? Mathf.Clamp01((float)current / max) : 0f;
+                fillRect.anchorMax = new Vector2(ratio, 1f);
+                valueText.text = text;
+            }
         }
     }
 }

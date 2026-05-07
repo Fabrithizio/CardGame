@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/Battle/TurnManager.cs
-// Descrição: Controla o fluxo de turnos e fases da batalha, alternando entre jogador e inimigo.
+// Descrição: Controla o fluxo de turnos e fases da batalha. A compra de carta acontece no começo do turno, então StartTurn avança direto para Main.
 
 using System;
 using UnityEngine;
@@ -45,10 +45,11 @@ namespace CardGame.Battle
             {
                 case BattlePhase.None:
                     SetPhase(BattlePhase.StartTurn);
+                    OnTurnStarted?.Invoke(activePlayerIndex);
                     break;
 
                 case BattlePhase.StartTurn:
-                    SetPhase(BattlePhase.Draw);
+                    SetPhase(BattlePhase.Main);
                     break;
 
                 case BattlePhase.Draw:

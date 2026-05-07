@@ -12,7 +12,7 @@ namespace CardGame.Battle
     public class BoardRuntime
     {
         public const int MaxCreatureSlots = 5;
-        public const int MaxTrapSlots = 3;
+        public const int MaxTrapSlots = 6;
 
         [SerializeField] private List<CardRuntime> creatureSlots = new();
         [SerializeField] private List<CardRuntime> trapSlots = new();
@@ -63,6 +63,8 @@ namespace CardGame.Battle
 
         public int GetFirstFreeCreatureSlotIndex()
         {
+            EnsureSlotCounts();
+
             for (int i = 0; i < creatureSlots.Count; i++)
             {
                 if (creatureSlots[i] == null)
@@ -76,6 +78,8 @@ namespace CardGame.Battle
 
         public int GetFirstFreeTrapSlotIndex()
         {
+            EnsureSlotCounts();
+
             for (int i = 0; i < trapSlots.Count; i++)
             {
                 if (trapSlots[i] == null)
@@ -89,6 +93,8 @@ namespace CardGame.Battle
 
         public bool TryPlaceCreature(CardRuntime card, int slotIndex)
         {
+            EnsureSlotCounts();
+
             if (card == null)
             {
                 Debug.LogWarning("Tentativa de colocar uma criatura nula no campo.");
@@ -131,6 +137,8 @@ namespace CardGame.Battle
 
         public bool TryPlaceTrap(CardRuntime card, int slotIndex)
         {
+            EnsureSlotCounts();
+
             if (card == null)
             {
                 Debug.LogWarning("Tentativa de colocar uma armadilha nula no campo.");
@@ -173,6 +181,8 @@ namespace CardGame.Battle
 
         public CardRuntime GetCreatureAt(int slotIndex)
         {
+            EnsureSlotCounts();
+
             if (!IsValidCreatureSlot(slotIndex))
             {
                 return null;
@@ -183,6 +193,8 @@ namespace CardGame.Battle
 
         public CardRuntime GetTrapAt(int slotIndex)
         {
+            EnsureSlotCounts();
+
             if (!IsValidTrapSlot(slotIndex))
             {
                 return null;
@@ -193,6 +205,8 @@ namespace CardGame.Battle
 
         public bool RemoveCreature(CardRuntime card)
         {
+            EnsureSlotCounts();
+
             if (card == null)
             {
                 return false;
@@ -212,6 +226,8 @@ namespace CardGame.Battle
 
         public bool RemoveTrap(CardRuntime card)
         {
+            EnsureSlotCounts();
+
             if (card == null)
             {
                 return false;
@@ -231,6 +247,8 @@ namespace CardGame.Battle
 
         public List<CardRuntime> GetAliveCreatures()
         {
+            EnsureSlotCounts();
+
             List<CardRuntime> aliveCreatures = new();
 
             for (int i = 0; i < creatureSlots.Count; i++)
@@ -248,6 +266,8 @@ namespace CardGame.Battle
 
         public void ClearDestroyedCreatures()
         {
+            EnsureSlotCounts();
+
             for (int i = 0; i < creatureSlots.Count; i++)
             {
                 CardRuntime card = creatureSlots[i];
@@ -261,11 +281,13 @@ namespace CardGame.Battle
 
         public void ResetTurnState()
         {
+            EnsureSlotCounts();
+
             for (int i = 0; i < creatureSlots.Count; i++)
             {
                 CardRuntime card = creatureSlots[i];
 
-                if (card != null && card.IsAlive)
+                if (card != null)
                 {
                     card.ResetTurnState();
                 }
@@ -280,6 +302,29 @@ namespace CardGame.Battle
         private bool IsValidTrapSlot(int slotIndex)
         {
             return slotIndex >= 0 && slotIndex < trapSlots.Count;
+        }
+
+        private void EnsureSlotCounts()
+        {
+            while (creatureSlots.Count < MaxCreatureSlots)
+            {
+                creatureSlots.Add(null);
+            }
+
+            while (trapSlots.Count < MaxTrapSlots)
+            {
+                trapSlots.Add(null);
+            }
+
+            while (creatureSlots.Count > MaxCreatureSlots)
+            {
+                creatureSlots.RemoveAt(creatureSlots.Count - 1);
+            }
+
+            while (trapSlots.Count > MaxTrapSlots)
+            {
+                trapSlots.RemoveAt(trapSlots.Count - 1);
+            }
         }
     }
 }

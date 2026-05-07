@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/BattleBoardUI.cs
-// Descrição: Cria uma visualização temporária do campo usando Canvas UI, com slots separados de criaturas e armadilhas.
+// Descrição: Campo com 5 criaturas grandes, 6 armadilhas menores, contador lateral e layout recalculado em tempo real.
 
 using System.Collections.Generic;
 using CardGame.Battle;
@@ -11,35 +11,36 @@ namespace CardGame.UI
 {
     public class BattleBoardUI : MonoBehaviour
     {
-        private const int CreatureSlotCount = 5;
-        private const int TrapSlotCount = 3;
+        private const int CreatureSlotCount = BoardRuntime.MaxCreatureSlots;
+        private const int TrapSlotCount = BoardRuntime.MaxTrapSlots;
 
         [Header("Referência")]
         [SerializeField] private BattleManager battleManager;
 
-        [Header("Criaturas")]
-        [SerializeField] private Vector2 cardSize = new Vector2(125f, 175f);
-        [SerializeField] private float cardSpacing = 10f;
-        [SerializeField] private float enemyCreatureRowY = -70f;
-        [SerializeField] private float playerCreatureRowY = 135f;
+        [Header("Layout em Tempo Real")]
+        [SerializeField] private bool updateLayoutEveryFrame = true;
 
-        [Header("Armadilhas")]
-        [SerializeField] private Vector2 trapSize = new Vector2(92f, 42f);
-        [SerializeField] private float trapSpacing = 8f;
-        [SerializeField] private float enemyTrapRowY = -245f;
-        [SerializeField] private float playerTrapRowY = -55f;
+        [Header("Criaturas")]
+        [SerializeField] private Vector2 creatureSize = new Vector2(154f, 208f);
+        [SerializeField] private float creatureSpacing = 8f;
+        [SerializeField] [Range(0.6f, 1f)] private float creatureHeightUse = 0.94f;
+
+        [Header("Armadilhas/Magias")]
+        [SerializeField] private Vector2 trapSize = new Vector2(104f, 72f);
+        [SerializeField] private float trapSpacing = 7f;
+        [SerializeField] private float trapCounterWidth = 108f;
+        [SerializeField] [Range(0.55f, 1f)] private float trapHeightUse = 0.82f;
 
         [Header("Texto")]
-        [SerializeField] private int nameFontSize = 13;
+        [SerializeField] private int nameFontSize = 15;
         [SerializeField] private int statsFontSize = 12;
         [SerializeField] private int statusFontSize = 10;
-        [SerializeField] private int trapFontSize = 10;
+        [SerializeField] private int trapFontSize = 11;
+        [SerializeField] private int trapCounterFontSize = 16;
 
         [Header("Seleção")]
         [SerializeField] private Color selectedColor = new Color(0.15f, 0.85f, 1f, 0.95f);
 
-        private Canvas canvas;
-        private RectTransform root;
         private Font defaultFont;
 
         private readonly List<CardSlotUI> enemyCreatureSlots = new();
@@ -47,7 +48,13 @@ namespace CardGame.UI
         private readonly List<TrapSlotUI> enemyTrapSlots = new();
         private readonly List<TrapSlotUI> playerTrapSlots = new();
 
+        private RectTransform enemyCreatureZone;
+        private RectTransform playerCreatureZone;
+        private TrapBandUI enemyTrapBand;
+        private TrapBandUI playerTrapBand;
+
         private int selectedPlayerSlotIndex = -1;
+        private bool built;
 
         private void Awake()
         {
@@ -56,101 +63,122 @@ namespace CardGame.UI
                 battleManager = FindFirstObjectByType<BattleManager>();
             }
 
-            defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (defaultFont == null)
-            {
-                defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
-            }
-
-            CreateCanvas();
+            defaultFont = ResponsiveUIUtility.GetDefaultFont();
             CreateBoard();
         }
 
         private void Update()
         {
+            if (!built)
+            {
+                CreateBoard();
+            }
+
+            if (updateLayoutEveryFrame)
+            {
+                ApplyRuntimeLayout();
+            }
+
             Refresh();
         }
 
-        private void CreateCanvas()
+        private void OnValidate()
         {
-            GameObject canvasObject = new GameObject("Battle Board UI Canvas");
-            canvasObject.transform.SetParent(transform, false);
+            if (!Application.isPlaying)
+            {
+                return;
+            }
 
-            canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 10;
-
-            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            canvasObject.AddComponent<GraphicRaycaster>();
-
-            root = canvasObject.GetComponent<RectTransform>();
-            root.anchorMin = Vector2.zero;
-            root.anchorMax = Vector2.one;
-            root.offsetMin = Vector2.zero;
-            root.offsetMax = Vector2.zero;
+            ApplyRuntimeLayout();
         }
 
         private void CreateBoard()
         {
-            RectTransform enemyTrapRow = CreateRow("Enemy Trap Row", new Vector2(0.5f, 0.72f), enemyTrapRowY, 450f, trapSize.y, trapSpacing);
-            RectTransform enemyCreatureRow = CreateRow("Enemy Creature Row", new Vector2(0.5f, 0.72f), enemyCreatureRowY, 900f, cardSize.y, cardSpacing);
+            if (built)
+            {
+                return;
+            }
 
-            RectTransform playerCreatureRow = CreateRow("Player Creature Row", new Vector2(0.5f, 0.22f), playerCreatureRowY, 900f, cardSize.y, cardSpacing);
-            RectTransform playerTrapRow = CreateRow("Player Trap Row", new Vector2(0.5f, 0.22f), playerTrapRowY, 450f, trapSize.y, trapSpacing);
+            BattleScreenLayoutUI layout = BattleScreenLayoutUI.GetOrCreate();
+
+            enemyCreatureZone = CreateContainer(layout.GetZone(BattleScreenZone.EnemyCreatureRow), "Enemy Creature Row");
+            playerCreatureZone = CreateContainer(layout.GetZone(BattleScreenZone.PlayerCreatureRow), "Player Creature Row");
+
+            enemyTrapBand = CreateTrapBand(layout.GetZone(BattleScreenZone.EnemyTrapRow), false);
+            playerTrapBand = CreateTrapBand(layout.GetZone(BattleScreenZone.PlayerTrapRow), true);
 
             for (int i = 0; i < CreatureSlotCount; i++)
             {
                 int slotIndex = i;
-
-                CardSlotUI enemySlot = CreateCreatureSlot(enemyCreatureRow, false, slotIndex);
-                CardSlotUI playerSlot = CreateCreatureSlot(playerCreatureRow, true, slotIndex);
-
-                enemyCreatureSlots.Add(enemySlot);
-                playerCreatureSlots.Add(playerSlot);
+                enemyCreatureSlots.Add(CreateCreatureSlot(enemyCreatureZone, false, slotIndex));
+                playerCreatureSlots.Add(CreateCreatureSlot(playerCreatureZone, true, slotIndex));
             }
 
             for (int i = 0; i < TrapSlotCount; i++)
             {
-                TrapSlotUI enemyTrap = CreateTrapSlot(enemyTrapRow, false);
-                TrapSlotUI playerTrap = CreateTrapSlot(playerTrapRow, true);
-
-                enemyTrapSlots.Add(enemyTrap);
-                playerTrapSlots.Add(playerTrap);
+                enemyTrapSlots.Add(CreateTrapSlot(enemyTrapBand.slotsParent, false));
+                playerTrapSlots.Add(CreateTrapSlot(playerTrapBand.slotsParent, true));
             }
+
+            built = true;
+            ApplyRuntimeLayout();
         }
 
-        private RectTransform CreateRow(
-            string rowName,
-            Vector2 anchor,
-            float anchoredY,
-            float width,
-            float height,
-            float spacing)
+        private RectTransform CreateContainer(RectTransform zone, string objectName)
         {
-            GameObject rowObject = new GameObject(rowName);
-            rowObject.transform.SetParent(root, false);
+            GameObject obj = new GameObject(objectName);
+            obj.transform.SetParent(zone, false);
 
-            RectTransform rect = rowObject.AddComponent<RectTransform>();
-            rect.anchorMin = anchor;
-            rect.anchorMax = anchor;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = new Vector2(0f, anchoredY);
-            rect.sizeDelta = new Vector2(width, height);
-
-            HorizontalLayoutGroup layout = rowObject.AddComponent<HorizontalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = spacing;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
+            RectTransform rect = obj.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
 
             return rect;
+        }
+
+        private TrapBandUI CreateTrapBand(RectTransform zone, bool isPlayerBand)
+        {
+            GameObject bandObject = new GameObject(isPlayerBand ? "Player Trap Band" : "Enemy Trap Band");
+            bandObject.transform.SetParent(zone, false);
+
+            RectTransform bandRect = bandObject.AddComponent<RectTransform>();
+            bandRect.anchorMin = Vector2.zero;
+            bandRect.anchorMax = Vector2.one;
+            bandRect.offsetMin = Vector2.zero;
+            bandRect.offsetMax = Vector2.zero;
+
+            GameObject counterObject = new GameObject("Trap Counter");
+            counterObject.transform.SetParent(bandObject.transform, false);
+
+            RectTransform counterRect = counterObject.AddComponent<RectTransform>();
+            counterRect.anchorMin = new Vector2(0f, 0.5f);
+            counterRect.anchorMax = new Vector2(0f, 0.5f);
+            counterRect.pivot = new Vector2(0f, 0.5f);
+
+            Image counterBg = counterObject.AddComponent<Image>();
+            counterBg.color = isPlayerBand
+                ? new Color(0.02f, 0.10f, 0.20f, 0.86f)
+                : new Color(0.08f, 0.05f, 0.16f, 0.86f);
+
+            Outline counterOutline = counterObject.AddComponent<Outline>();
+            counterOutline.effectColor = new Color(0f, 0f, 0f, 0.65f);
+            counterOutline.effectDistance = new Vector2(2f, -2f);
+
+            Text counterText = CreateFullText(counterObject.transform, "Counter Text", trapCounterFontSize, FontStyle.Bold);
+            counterText.alignment = TextAnchor.MiddleCenter;
+            counterText.text = $"TRAPS\n0/{TrapSlotCount}";
+
+            GameObject slotsObject = new GameObject("Trap Slots");
+            slotsObject.transform.SetParent(bandObject.transform, false);
+
+            RectTransform slotsRect = slotsObject.AddComponent<RectTransform>();
+            slotsRect.anchorMin = new Vector2(0f, 0.5f);
+            slotsRect.anchorMax = new Vector2(0f, 0.5f);
+            slotsRect.pivot = new Vector2(0f, 0.5f);
+
+            return new TrapBandUI(bandRect, counterRect, counterText, slotsRect);
         }
 
         private CardSlotUI CreateCreatureSlot(RectTransform parent, bool isPlayerSlot, int slotIndex)
@@ -159,14 +187,16 @@ namespace CardGame.UI
             slotObject.transform.SetParent(parent, false);
 
             RectTransform rect = slotObject.AddComponent<RectTransform>();
-            rect.sizeDelta = cardSize;
-
-            LayoutElement layoutElement = slotObject.AddComponent<LayoutElement>();
-            layoutElement.preferredWidth = cardSize.x;
-            layoutElement.preferredHeight = cardSize.y;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
 
             Image background = slotObject.AddComponent<Image>();
-            background.color = GetCreatureColor(isPlayerSlot, false);
+            background.color = GetCreatureEmptyColor(isPlayerSlot);
+
+            Outline outline = slotObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.25f);
+            outline.effectDistance = new Vector2(2f, -2f);
 
             Button button = slotObject.AddComponent<Button>();
             button.targetGraphic = background;
@@ -182,18 +212,18 @@ namespace CardGame.UI
 
             VerticalLayoutGroup vertical = slotObject.AddComponent<VerticalLayoutGroup>();
             vertical.padding = new RectOffset(8, 8, 10, 8);
-            vertical.spacing = 6;
+            vertical.spacing = 4;
             vertical.childAlignment = TextAnchor.MiddleCenter;
             vertical.childControlWidth = true;
             vertical.childControlHeight = false;
             vertical.childForceExpandWidth = true;
             vertical.childForceExpandHeight = false;
 
-            Text nameText = CreateText(slotObject.transform, "Name", nameFontSize, FontStyle.Bold, cardSize.x - 16f, 48f);
-            Text statsText = CreateText(slotObject.transform, "Stats", statsFontSize, FontStyle.Normal, cardSize.x - 16f, 48f);
-            Text statusText = CreateText(slotObject.transform, "Status", statusFontSize, FontStyle.Italic, cardSize.x - 16f, 48f);
+            Text nameText = CreateSizedText(slotObject.transform, "Name", nameFontSize, FontStyle.Bold, creatureSize.x - 16f, 54f);
+            Text statsText = CreateSizedText(slotObject.transform, "Stats", statsFontSize, FontStyle.Normal, creatureSize.x - 16f, 56f);
+            Text statusText = CreateSizedText(slotObject.transform, "Status", statusFontSize, FontStyle.Italic, creatureSize.x - 16f, 42f);
 
-            return new CardSlotUI(background, nameText, statsText, statusText, isPlayerSlot);
+            return new CardSlotUI(rect, background, nameText, statsText, statusText, isPlayerSlot);
         }
 
         private TrapSlotUI CreateTrapSlot(RectTransform parent, bool isPlayerSlot)
@@ -202,29 +232,56 @@ namespace CardGame.UI
             slotObject.transform.SetParent(parent, false);
 
             RectTransform rect = slotObject.AddComponent<RectTransform>();
-            rect.sizeDelta = trapSize;
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
 
-            LayoutElement layoutElement = slotObject.AddComponent<LayoutElement>();
-            layoutElement.preferredWidth = trapSize.x;
-            layoutElement.preferredHeight = trapSize.y;
+            if (!isPlayerSlot)
+            {
+                rect.localRotation = Quaternion.Euler(0f, 0f, 180f);
+            }
 
             Image background = slotObject.AddComponent<Image>();
             background.color = isPlayerSlot
-                ? new Color(0.08f, 0.18f, 0.40f, 0.42f)
-                : new Color(0.38f, 0.10f, 0.12f, 0.42f);
+                ? new Color(0.10f, 0.19f, 0.52f, 0.86f)
+                : new Color(0.44f, 0.14f, 0.24f, 0.86f);
 
-            Text text = CreateText(slotObject.transform, "Trap Text", trapFontSize, FontStyle.Bold, trapSize.x - 8f, trapSize.y - 4f);
+            Outline outline = slotObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.20f);
+            outline.effectDistance = new Vector2(2f, -2f);
 
-            return new TrapSlotUI(background, text, isPlayerSlot);
+            Text text = CreateSizedText(slotObject.transform, "Trap Text", trapFontSize, FontStyle.Bold, trapSize.x - 10f, trapSize.y - 4f);
+            return new TrapSlotUI(rect, background, text, isPlayerSlot);
         }
 
-        private Text CreateText(
-            Transform parent,
-            string objectName,
-            int fontSize,
-            FontStyle fontStyle,
-            float width,
-            float height)
+        private Text CreateFullText(Transform parent, string objectName, int fontSize, FontStyle fontStyle)
+        {
+            GameObject textObject = new GameObject(objectName);
+            textObject.transform.SetParent(parent, false);
+
+            RectTransform rect = textObject.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(8f, 6f);
+            rect.offsetMax = new Vector2(-8f, -6f);
+
+            Text text = textObject.AddComponent<Text>();
+            text.font = defaultFont;
+            text.fontSize = fontSize;
+            text.fontStyle = fontStyle;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 8;
+            text.resizeTextMaxSize = fontSize;
+            text.text = string.Empty;
+
+            return text;
+        }
+
+        private Text CreateSizedText(Transform parent, string objectName, int fontSize, FontStyle fontStyle, float width, float height)
         {
             GameObject textObject = new GameObject(objectName);
             textObject.transform.SetParent(parent, false);
@@ -248,6 +305,87 @@ namespace CardGame.UI
             return text;
         }
 
+        private void ApplyRuntimeLayout()
+        {
+            if (!built)
+            {
+                return;
+            }
+
+            Canvas.ForceUpdateCanvases();
+
+            ApplyCreatureRowLayout(enemyCreatureSlots, enemyCreatureZone);
+            ApplyCreatureRowLayout(playerCreatureSlots, playerCreatureZone);
+            ApplyTrapBandLayout(enemyTrapBand, enemyTrapSlots);
+            ApplyTrapBandLayout(playerTrapBand, playerTrapSlots);
+        }
+
+        private void ApplyCreatureRowLayout(List<CardSlotUI> slots, RectTransform zone)
+        {
+            if (slots == null || zone == null || slots.Count == 0)
+            {
+                return;
+            }
+
+            float rowWidth = Mathf.Max(1f, zone.rect.width);
+            float rowHeight = Mathf.Max(1f, zone.rect.height);
+
+            float availableWidth = rowWidth;
+            float spacing = Mathf.Max(0f, creatureSpacing);
+            float slotWidth = Mathf.Min(creatureSize.x, (availableWidth - spacing * (slots.Count - 1)) / slots.Count);
+            slotWidth = Mathf.Max(32f, slotWidth);
+
+            float slotHeight = Mathf.Min(creatureSize.y, rowHeight * creatureHeightUse);
+            slotHeight = Mathf.Max(48f, slotHeight);
+
+            float totalWidth = (slotWidth * slots.Count) + spacing * (slots.Count - 1);
+            float startX = -totalWidth * 0.5f + slotWidth * 0.5f;
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                RectTransform rect = slots[i].RectTransform;
+                rect.sizeDelta = new Vector2(slotWidth, slotHeight);
+                rect.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), 0f);
+                rect.localScale = Vector3.one;
+            }
+        }
+
+        private void ApplyTrapBandLayout(TrapBandUI band, List<TrapSlotUI> slots)
+        {
+            if (band == null || band.root == null || band.counterRect == null || band.slotsParent == null || slots == null || slots.Count == 0)
+            {
+                return;
+            }
+
+            float width = Mathf.Max(1f, band.root.rect.width);
+            float height = Mathf.Max(1f, band.root.rect.height);
+
+            float counterWidth = Mathf.Clamp(trapCounterWidth, 46f, width * 0.22f);
+            float gap = Mathf.Max(4f, trapSpacing);
+            float slotAreaWidth = Mathf.Max(1f, width - counterWidth - gap);
+            float spacing = Mathf.Max(2f, trapSpacing);
+
+            float slotWidth = Mathf.Min(trapSize.x, (slotAreaWidth - spacing * (slots.Count - 1)) / slots.Count);
+            slotWidth = Mathf.Max(28f, slotWidth);
+
+            float slotHeight = Mathf.Min(trapSize.y, height * trapHeightUse, slotWidth * 0.78f);
+            slotHeight = Mathf.Max(24f, slotHeight);
+
+            band.counterRect.sizeDelta = new Vector2(counterWidth, Mathf.Min(height * 0.92f, slotHeight + 22f));
+            band.counterRect.anchoredPosition = new Vector2(0f, 0f);
+
+            band.slotsParent.sizeDelta = new Vector2(slotAreaWidth, height);
+            band.slotsParent.anchoredPosition = new Vector2(counterWidth + gap, 0f);
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                RectTransform rect = slots[i].RectTransform;
+                rect.sizeDelta = new Vector2(slotWidth, slotHeight);
+                rect.anchoredPosition = new Vector2(i * (slotWidth + spacing), 0f);
+                rect.localScale = Vector3.one;
+            }
+        }
+
         private void HandlePlayerSlotClicked(int slotIndex)
         {
             if (battleManager == null || battleManager.PlayerState == null)
@@ -261,7 +399,7 @@ namespace CardGame.UI
                 return;
             }
 
-            CardRuntime card = battleManager.PlayerState.Board.GetCreatureAt(slotIndex);
+            CardRuntime card = battleManager.PlayerState.Board != null ? battleManager.PlayerState.Board.GetCreatureAt(slotIndex) : null;
 
             if (card == null || !card.IsAlive)
             {
@@ -277,8 +415,7 @@ namespace CardGame.UI
             }
 
             selectedPlayerSlotIndex = slotIndex;
-
-            Debug.Log($"{card.CardName} selecionado como atacante.");
+            Debug.Log($"{card.CardName} foi selecionada para atacar.");
         }
 
         private void HandleEnemySlotClicked(int slotIndex)
@@ -297,6 +434,12 @@ namespace CardGame.UI
             if (selectedPlayerSlotIndex < 0)
             {
                 Debug.Log("Selecione primeiro uma criatura sua para atacar.");
+                return;
+            }
+
+            if (battleManager.PlayerState.Board == null || battleManager.EnemyState.Board == null)
+            {
+                selectedPlayerSlotIndex = -1;
                 return;
             }
 
@@ -330,7 +473,17 @@ namespace CardGame.UI
 
         private void Refresh()
         {
-            if (battleManager == null || battleManager.PlayerState == null || battleManager.EnemyState == null)
+            if (battleManager == null)
+            {
+                return;
+            }
+
+            if (battleManager.PlayerState == null || battleManager.EnemyState == null)
+            {
+                return;
+            }
+
+            if (battleManager.PlayerState.Board == null || battleManager.EnemyState.Board == null)
             {
                 return;
             }
@@ -338,12 +491,17 @@ namespace CardGame.UI
             RefreshCreatureSlots(playerCreatureSlots, battleManager.PlayerState.Board.CreatureSlots, true);
             RefreshCreatureSlots(enemyCreatureSlots, battleManager.EnemyState.Board.CreatureSlots, false);
 
-            RefreshTrapSlots(playerTrapSlots, battleManager.PlayerState.Board.TrapSlots, true);
-            RefreshTrapSlots(enemyTrapSlots, battleManager.EnemyState.Board.TrapSlots, false);
+            RefreshTrapSlots(playerTrapSlots, battleManager.PlayerState.Board.TrapSlots, playerTrapBand);
+            RefreshTrapSlots(enemyTrapSlots, battleManager.EnemyState.Board.TrapSlots, enemyTrapBand);
         }
 
         private void RefreshCreatureSlots(List<CardSlotUI> slots, IReadOnlyList<CardRuntime> cards, bool isPlayerRow)
         {
+            if (slots == null || cards == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < slots.Count; i++)
             {
                 CardRuntime card = i < cards.Count ? cards[i] : null;
@@ -352,44 +510,53 @@ namespace CardGame.UI
             }
         }
 
-        private void RefreshTrapSlots(List<TrapSlotUI> slots, IReadOnlyList<CardRuntime> cards, bool isPlayerRow)
+        private void RefreshTrapSlots(List<TrapSlotUI> slots, IReadOnlyList<CardRuntime> cards, TrapBandUI band)
         {
+            if (slots == null || cards == null || band == null)
+            {
+                return;
+            }
+
+            int occupiedCount = 0;
+
             for (int i = 0; i < slots.Count; i++)
             {
                 CardRuntime card = i < cards.Count ? cards[i] : null;
+
+                if (card != null)
+                {
+                    occupiedCount++;
+                }
+
                 slots[i].SetTrap(card);
+            }
+
+            if (band.counterText != null)
+            {
+                band.counterText.text = $"TRAPS\n{occupiedCount}/{TrapSlotCount}";
             }
         }
 
-        private Color GetCreatureColor(bool isPlayerSlot, bool hasCard)
+        private Color GetCreatureEmptyColor(bool isPlayerSlot)
         {
-            if (isPlayerSlot)
-            {
-                return hasCard
-                    ? new Color(0.10f, 0.28f, 0.60f, 0.92f)
-                    : new Color(0.10f, 0.28f, 0.60f, 0.34f);
-            }
-
-            return hasCard
-                ? new Color(0.55f, 0.16f, 0.18f, 0.92f)
-                : new Color(0.55f, 0.16f, 0.18f, 0.34f);
+            return isPlayerSlot
+                ? new Color(0.11f, 0.23f, 0.56f, 0.34f)
+                : new Color(0.46f, 0.15f, 0.18f, 0.34f);
         }
 
         private sealed class CardSlotUI
         {
+            public RectTransform RectTransform { get; }
+
             private readonly Image background;
             private readonly Text nameText;
             private readonly Text statsText;
             private readonly Text statusText;
             private readonly bool isPlayerSlot;
 
-            public CardSlotUI(
-                Image background,
-                Text nameText,
-                Text statsText,
-                Text statusText,
-                bool isPlayerSlot)
+            public CardSlotUI(RectTransform rectTransform, Image background, Text nameText, Text statsText, Text statusText, bool isPlayerSlot)
             {
+                RectTransform = rectTransform;
                 this.background = background;
                 this.nameText = nameText;
                 this.statsText = statsText;
@@ -402,8 +569,8 @@ namespace CardGame.UI
                 if (card == null)
                 {
                     background.color = isPlayerSlot
-                        ? new Color(0.10f, 0.28f, 0.60f, 0.34f)
-                        : new Color(0.55f, 0.16f, 0.18f, 0.34f);
+                        ? new Color(0.11f, 0.23f, 0.56f, 0.34f)
+                        : new Color(0.46f, 0.15f, 0.18f, 0.34f);
 
                     nameText.text = "Vazio";
                     statsText.text = string.Empty;
@@ -414,15 +581,11 @@ namespace CardGame.UI
                 background.color = isSelected
                     ? selectedColor
                     : isPlayerSlot
-                        ? new Color(0.10f, 0.28f, 0.60f, 0.92f)
-                        : new Color(0.55f, 0.16f, 0.18f, 0.92f);
+                        ? new Color(0.11f, 0.23f, 0.56f, 0.92f)
+                        : new Color(0.46f, 0.15f, 0.18f, 0.92f);
 
                 nameText.text = ShortName(card.CardName);
-
-                statsText.text =
-                    $"ATK {card.CurrentAttack}  HP {card.CurrentHealth}\n" +
-                    $"SPD {card.CurrentSpeed}  DEF {card.CurrentDefense}";
-
+                statsText.text = $"ATK {card.CurrentAttack}  HP {card.CurrentHealth}\nSPD {card.CurrentSpeed}  DEF {card.CurrentDefense}";
                 statusText.text = GetStatusText(card);
             }
 
@@ -461,12 +624,15 @@ namespace CardGame.UI
 
         private sealed class TrapSlotUI
         {
+            public RectTransform RectTransform { get; }
+
             private readonly Image background;
             private readonly Text text;
             private readonly bool isPlayerSlot;
 
-            public TrapSlotUI(Image background, Text text, bool isPlayerSlot)
+            public TrapSlotUI(RectTransform rectTransform, Image background, Text text, bool isPlayerSlot)
             {
+                RectTransform = rectTransform;
                 this.background = background;
                 this.text = text;
                 this.isPlayerSlot = isPlayerSlot;
@@ -477,18 +643,18 @@ namespace CardGame.UI
                 if (card == null)
                 {
                     background.color = isPlayerSlot
-                        ? new Color(0.08f, 0.18f, 0.40f, 0.42f)
-                        : new Color(0.38f, 0.10f, 0.12f, 0.42f);
+                        ? new Color(0.12f, 0.20f, 0.50f, 0.42f)
+                        : new Color(0.42f, 0.14f, 0.24f, 0.42f);
 
                     text.text = "Trap";
                     return;
                 }
 
                 background.color = isPlayerSlot
-                    ? new Color(0.62f, 0.32f, 0.10f, 0.92f)
-                    : new Color(0.72f, 0.22f, 0.10f, 0.92f);
+                    ? new Color(0.66f, 0.36f, 0.12f, 0.92f)
+                    : new Color(0.76f, 0.24f, 0.12f, 0.92f);
 
-                text.text = ShortName(card.CardName);
+                text.text = isPlayerSlot ? ShortName(card.CardName) : "???";
             }
 
             private string ShortName(string value)
@@ -498,12 +664,28 @@ namespace CardGame.UI
                     return "Armadilha";
                 }
 
-                if (value.Length <= 12)
+                if (value.Length <= 14)
                 {
                     return value;
                 }
 
-                return value.Substring(0, 12) + "...";
+                return value.Substring(0, 14) + "...";
+            }
+        }
+
+        private sealed class TrapBandUI
+        {
+            public readonly RectTransform root;
+            public readonly RectTransform counterRect;
+            public readonly Text counterText;
+            public readonly RectTransform slotsParent;
+
+            public TrapBandUI(RectTransform root, RectTransform counterRect, Text counterText, RectTransform slotsParent)
+            {
+                this.root = root;
+                this.counterRect = counterRect;
+                this.counterText = counterText;
+                this.slotsParent = slotsParent;
             }
         }
     }

@@ -1,9 +1,10 @@
 // Caminho: Assets/_Project/Scripts/Battle/BattleManager.cs
-// Descrição: Controla a batalha, turnos, compra automática na fase Draw, IA simples, ataque entre criaturas, ataque direto, buffs, escudo e Míticos.
+// Descrição: Controla a batalha, turnos, compra automática no começo do turno, IA simples, ataque entre criaturas, ataque direto, armadilhas, buffs, escudo e Míticos.
 
 using System.Collections;
 using System.Collections.Generic;
 using CardGame.Cards;
+using CardGame.Effects;
 using CardGame.Mythics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -142,7 +143,7 @@ namespace CardGame.Battle
             turnManager.StartBattle();
 
             Debug.Log("Batalha iniciada.");
-            Debug.Log("Debug ativo: N = próxima fase | D = comprar manual | C = colocar criatura | M = usar Mítico | A = atacar/direto | S = buffar Speed | H = dar escudo.");
+            Debug.Log("Debug ativo: N = próxima fase | D = comprar manual/debug | C = colocar criatura | M = usar Mítico | A = atacar/direto | S = buffar Speed | H = dar escudo.");
             PrintBattleDebug();
         }
 
@@ -162,6 +163,10 @@ namespace CardGame.Battle
 
             Debug.Log($"Turno iniciado: {activePlayer.PlayerName}");
 
+            // A compra agora acontece automaticamente no começo do turno.
+            // Assim o jogador já começa a vez com a carta comprada, sem precisar passar por uma fase separada de compra.
+            ActivePlayerDrawCard();
+
             if (enableEnemyAI && activePlayerIndex == 1)
             {
                 StartEnemyTurnAI();
@@ -179,11 +184,6 @@ namespace CardGame.Battle
         private void HandlePhaseChanged(BattlePhase phase)
         {
             Debug.Log($"Fase atual: {phase}");
-
-            if (phase == BattlePhase.Draw)
-            {
-                ActivePlayerDrawCard();
-            }
         }
 
         private void StartEnemyTurnAI()
@@ -205,16 +205,7 @@ namespace CardGame.Battle
                 yield break;
             }
 
-            GoToNextPhase();
-
-            yield return new WaitForSeconds(enemyActionDelay);
-
-            if (turnManager == null || !turnManager.IsEnemyTurn)
-            {
-                yield break;
-            }
-
-            GoToNextPhase();
+            GoToNextPhase(); // StartTurn -> Main
 
             yield return new WaitForSeconds(enemyActionDelay);
 
@@ -233,7 +224,7 @@ namespace CardGame.Battle
                 yield break;
             }
 
-            GoToNextPhase();
+            GoToNextPhase(); // Main -> Battle
 
             yield return new WaitForSeconds(enemyActionDelay);
 
@@ -251,7 +242,7 @@ namespace CardGame.Battle
                 yield break;
             }
 
-            GoToNextPhase();
+            GoToNextPhase(); // Battle -> EndTurn
 
             yield return new WaitForSeconds(enemyActionDelay);
 
@@ -260,7 +251,7 @@ namespace CardGame.Battle
                 yield break;
             }
 
-            GoToNextPhase();
+            GoToNextPhase(); // EndTurn -> próximo jogador
         }
 
         public void GoToNextPhase()
@@ -317,7 +308,7 @@ namespace CardGame.Battle
                 }
             }
 
-            Debug.Log($"{activePlayer.PlayerName} não tem criatura na mão ou não tem slot livre.");
+            Debug.Log($"{activePlayer.PlayerName} não tem criatura na mão, energia suficiente ou slot livre.");
         }
 
         public void ActivePlayerUseFirstAvailableMythic()
@@ -528,6 +519,24 @@ namespace CardGame.Battle
 
         public bool ResolveCreatureAttack(CardRuntime attacker, CardRuntime defender)
         {
+            PlayerBattleState attackingPlayer = GetOwnerOfCreature(attacker);
+            PlayerBattleState defendingPlayer = GetOwnerOfCreature(defender);
+
+            if (attackingPlayer == null || defendingPlayer == null)
+            {
+                Debug.LogWarning("Ataque cancelado: não foi possível identificar os donos das criaturas.");
+                return false;
+            }
+
+            if (TrapResolver.TryResolveBeforeAttack(attackingPlayer, defendingPlayer, attacker, defender, out string trapMessage))
+            {
+                Debug.Log(trapMessage);
+                attacker.MarkAsAttacked();
+                PrintBattleDebug();
+                CheckForBattleEnd();
+                return true;
+            }
+
             bool success = AttackResolver.TryResolveCreatureAttack(attacker, defender, out AttackResult result);
 
             if (!success)
@@ -578,6 +587,14 @@ namespace CardGame.Battle
                 return false;
             }
 
+            PlayerBattleState attackingPlayer = GetOwnerOfCreature(attacker);
+
+            if (attackingPlayer == null)
+            {
+                Debug.Log("Ataque direto cancelado: dono do atacante inválido.");
+                return false;
+            }
+
             if (defendingPlayer == null || defendingPlayer.IsDefeated)
             {
                 Debug.Log("Ataque direto cancelado: defensor inválido.");
@@ -588,6 +605,15 @@ namespace CardGame.Battle
             {
                 Debug.Log($"{attacker.CardName} já atacou neste turno.");
                 return false;
+            }
+
+            if (TrapResolver.TryResolveBeforeAttack(attackingPlayer, defendingPlayer, attacker, null, out string trapMessage))
+            {
+                Debug.Log(trapMessage);
+                attacker.MarkAsAttacked();
+                PrintBattleDebug();
+                CheckForBattleEnd();
+                return true;
             }
 
             int totalHits = attacker.GetAttackCountBySpeed();
@@ -650,6 +676,46 @@ namespace CardGame.Battle
             return creatures[0];
         }
 
+        private PlayerBattleState GetOwnerOfCreature(CardRuntime creature)
+        {
+            if (creature == null)
+            {
+                return null;
+            }
+
+            if (BoardContainsCreature(playerState, creature))
+            {
+                return playerState;
+            }
+
+            if (BoardContainsCreature(enemyState, creature))
+            {
+                return enemyState;
+            }
+
+            return null;
+        }
+
+        private bool BoardContainsCreature(PlayerBattleState state, CardRuntime creature)
+        {
+            if (state == null || creature == null)
+            {
+                return false;
+            }
+
+            IReadOnlyList<CardRuntime> slots = state.Board.CreatureSlots;
+
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i] == creature)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private PlayerBattleState GetActivePlayer()
         {
             return GetPlayerByIndex(turnManager.ActivePlayerIndex);
@@ -706,20 +772,41 @@ namespace CardGame.Battle
             Debug.Log(
                 $"[Estado] " +
                 $"Jogador Vida: {playerState.CurrentHealth}/{playerState.MaxHealth} | " +
+                $"Energia: {playerState.CurrentEnergy}/{playerState.MaxEnergy} | " +
                 $"Deck: {playerState.Deck.CardsRemaining} | " +
                 $"Mão: {playerState.Hand.Count} | " +
                 $"Criaturas: {playerState.Board.GetAliveCreatures().Count} | " +
+                $"Armadilhas: {CountOccupiedTraps(playerState)} | " +
                 $"Míticos disponíveis: {playerState.MythicLoadout.GetAvailableCount()}"
             );
 
             Debug.Log(
                 $"[Estado] " +
                 $"Inimigo Vida: {enemyState.CurrentHealth}/{enemyState.MaxHealth} | " +
+                $"Energia: {enemyState.CurrentEnergy}/{enemyState.MaxEnergy} | " +
                 $"Deck: {enemyState.Deck.CardsRemaining} | " +
                 $"Mão: {enemyState.Hand.Count} | " +
                 $"Criaturas: {enemyState.Board.GetAliveCreatures().Count} | " +
+                $"Armadilhas: {CountOccupiedTraps(enemyState)} | " +
                 $"Míticos disponíveis: {enemyState.MythicLoadout.GetAvailableCount()}"
             );
+        }
+
+        private int CountOccupiedTraps(PlayerBattleState state)
+        {
+            int count = 0;
+
+            IReadOnlyList<CardRuntime> traps = state.Board.TrapSlots;
+
+            for (int i = 0; i < traps.Count; i++)
+            {
+                if (traps[i] != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
     }
 }

@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/PlayerHandUI.cs
-// Descrição: Mostra as cartas na mão do jogador e permite clicar em criatura para colocar no campo ou armadilha para preparar no slot de armadilha.
+// Descrição: Mão do jogador em leque, maior, mais alta e sem ficar afundada no rodapé.
 
 using System.Collections.Generic;
 using CardGame.Battle;
@@ -13,25 +13,28 @@ namespace CardGame.UI
     {
         [Header("Referência")]
         [SerializeField] private BattleManager battleManager;
+        [SerializeField] private CardPreviewUI cardPreviewUI;
 
         [Header("Layout")]
-        [SerializeField] private Vector2 cardSize = new Vector2(95f, 135f);
-        [SerializeField] private float cardSpacing = 6f;
-        [SerializeField] private Vector2 anchorPosition = new Vector2(0f, 20f);
+        [SerializeField] private Vector2 cardSize = new Vector2(118f, 176f);
+        [SerializeField] private float cardSpacing = -34f;
+        [SerializeField] private Vector2 anchorPosition = new Vector2(0f, 4f);
+        [SerializeField] private float maxFanAngle = 10f;
+        [SerializeField] private float selectedLift = 24f;
 
         [Header("Texto")]
-        [SerializeField] private int nameFontSize = 12;
+        [SerializeField] private int nameFontSize = 14;
         [SerializeField] private int statsFontSize = 10;
-        [SerializeField] private int typeFontSize = 9;
+        [SerializeField] private int typeFontSize = 10;
 
-        private Canvas canvas;
         private RectTransform root;
-        private RectTransform handRow;
+        private RectTransform handRoot;
         private Font defaultFont;
 
         private readonly List<HandCardUI> spawnedCards = new();
 
         private int lastHandCount = -1;
+        private int lastHoveredIndex = -1;
 
         private void Awake()
         {
@@ -40,64 +43,39 @@ namespace CardGame.UI
                 battleManager = FindFirstObjectByType<BattleManager>();
             }
 
-            defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (defaultFont == null)
+            if (cardPreviewUI == null)
             {
-                defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
+                cardPreviewUI = FindFirstObjectByType<CardPreviewUI>();
             }
 
+            defaultFont = ResponsiveUIUtility.GetDefaultFont();
             CreateCanvas();
-            CreateHandRow();
+            CreateHandRoot();
         }
 
         private void Update()
         {
             RefreshIfNeeded();
+            RefreshCardTransforms();
         }
 
         private void CreateCanvas()
         {
-            GameObject canvasObject = new GameObject("Player Hand UI Canvas");
-            canvasObject.transform.SetParent(transform, false);
-
-            canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 40;
-
-            CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            canvasObject.AddComponent<GraphicRaycaster>();
-
-            root = canvasObject.GetComponent<RectTransform>();
-            root.anchorMin = Vector2.zero;
-            root.anchorMax = Vector2.one;
-            root.offsetMin = Vector2.zero;
-            root.offsetMax = Vector2.zero;
+            BattleScreenLayoutUI layout = BattleScreenLayoutUI.GetOrCreate();
+            root = layout.GetZone(BattleScreenZone.PlayerHand);
         }
 
-        private void CreateHandRow()
+        private void CreateHandRoot()
         {
-            GameObject rowObject = new GameObject("Player Hand Row");
+            GameObject rowObject = new GameObject("Player Hand Fan Root");
             rowObject.transform.SetParent(root, false);
 
-            handRow = rowObject.AddComponent<RectTransform>();
-            handRow.anchorMin = new Vector2(0.5f, 0f);
-            handRow.anchorMax = new Vector2(0.5f, 0f);
-            handRow.pivot = new Vector2(0.5f, 0f);
-            handRow.anchoredPosition = anchorPosition;
-            handRow.sizeDelta = new Vector2(1200f, cardSize.y);
-
-            HorizontalLayoutGroup layout = rowObject.AddComponent<HorizontalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = cardSpacing;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
+            handRoot = rowObject.AddComponent<RectTransform>();
+            handRoot.anchorMin = new Vector2(0.5f, 0f);
+            handRoot.anchorMax = new Vector2(0.5f, 0f);
+            handRoot.pivot = new Vector2(0.5f, 0f);
+            handRoot.anchoredPosition = anchorPosition;
+            handRoot.sizeDelta = new Vector2(760f, 220f);
         }
 
         private void RefreshIfNeeded()
@@ -131,39 +109,45 @@ namespace CardGame.UI
                 HandCardUI cardUI = CreateCardUI(cards[i], cardIndex);
                 spawnedCards.Add(cardUI);
             }
+
+            RefreshCardTransforms();
         }
 
         private void ClearHand()
         {
-            for (int i = handRow.childCount - 1; i >= 0; i--)
+            for (int i = handRoot.childCount - 1; i >= 0; i--)
             {
-                Destroy(handRow.GetChild(i).gameObject);
+                Destroy(handRoot.GetChild(i).gameObject);
             }
 
             spawnedCards.Clear();
+            lastHoveredIndex = -1;
         }
 
         private HandCardUI CreateCardUI(CardRuntime card, int handIndex)
         {
             GameObject cardObject = new GameObject("Hand Card");
-            cardObject.transform.SetParent(handRow, false);
+            cardObject.transform.SetParent(handRoot, false);
 
             RectTransform rect = cardObject.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
             rect.sizeDelta = cardSize;
-
-            LayoutElement layout = cardObject.AddComponent<LayoutElement>();
-            layout.preferredWidth = cardSize.x;
-            layout.preferredHeight = cardSize.y;
 
             Image background = cardObject.AddComponent<Image>();
             background.color = GetColorByCardType(card);
+
+            Outline outline = cardObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.72f);
+            outline.effectDistance = new Vector2(3f, -3f);
 
             Button button = cardObject.AddComponent<Button>();
             button.targetGraphic = background;
             button.onClick.AddListener(() => HandleCardClicked(handIndex));
 
             VerticalLayoutGroup vertical = cardObject.AddComponent<VerticalLayoutGroup>();
-            vertical.padding = new RectOffset(7, 7, 8, 7);
+            vertical.padding = new RectOffset(10, 10, 12, 10);
             vertical.spacing = 4;
             vertical.childAlignment = TextAnchor.MiddleCenter;
             vertical.childControlWidth = true;
@@ -171,22 +155,18 @@ namespace CardGame.UI
             vertical.childForceExpandWidth = true;
             vertical.childForceExpandHeight = false;
 
-            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 36f);
+            Text costText = CreateText(cardObject.transform, "Cost", typeFontSize + 2, FontStyle.Bold, 24f);
+            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 52f);
             Text typeText = CreateText(cardObject.transform, "Type", typeFontSize, FontStyle.Italic, 24f);
-            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 54f);
+            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 70f);
 
-            HandCardUI cardUI = new HandCardUI(background, nameText, typeText, statsText);
+            HandCardUI cardUI = new HandCardUI(rect, background, costText, nameText, typeText, statsText);
             cardUI.SetCard(card);
 
             return cardUI;
         }
 
-        private Text CreateText(
-            Transform parent,
-            string objectName,
-            int fontSize,
-            FontStyle fontStyle,
-            float height)
+        private Text CreateText(Transform parent, string objectName, int fontSize, FontStyle fontStyle, float height)
         {
             GameObject textObject = new GameObject(objectName);
             textObject.transform.SetParent(parent, false);
@@ -205,21 +185,45 @@ namespace CardGame.UI
             text.text = string.Empty;
 
             RectTransform rect = textObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(cardSize.x - 14f, height);
+            rect.sizeDelta = new Vector2(cardSize.x - 18f, height);
 
             return text;
+        }
+
+        private void RefreshCardTransforms()
+        {
+            int count = spawnedCards.Count;
+
+            if (count <= 0)
+            {
+                return;
+            }
+
+            float step = cardSize.x + cardSpacing;
+
+            for (int i = 0; i < count; i++)
+            {
+                float centeredIndex = i - (count - 1) * 0.5f;
+                float normalized = count <= 1 ? 0f : centeredIndex / ((count - 1) * 0.5f);
+
+                float x = centeredIndex * step;
+                float curveY = -Mathf.Abs(normalized) * 18f;
+                float rotation = -normalized * maxFanAngle;
+
+                if (i == lastHoveredIndex)
+                {
+                    curveY += selectedLift;
+                    rotation *= 0.35f;
+                }
+
+                spawnedCards[i].SetTransform(new Vector2(x, curveY), rotation, i);
+            }
         }
 
         private void HandleCardClicked(int handIndex)
         {
             if (battleManager == null || battleManager.PlayerState == null)
             {
-                return;
-            }
-
-            if (battleManager.TurnManager == null || !battleManager.TurnManager.IsPlayerTurn)
-            {
-                Debug.Log("Você só pode jogar cartas da sua mão no seu turno.");
                 return;
             }
 
@@ -231,26 +235,51 @@ namespace CardGame.UI
                 return;
             }
 
-            switch (clickedCard.CardType)
+            lastHoveredIndex = handIndex;
+            RefreshCardTransforms();
+
+            if (cardPreviewUI == null)
+            {
+                Debug.LogWarning("CardPreviewUI não encontrado na cena.");
+                return;
+            }
+
+            cardPreviewUI.Show(clickedCard, TryPlayConfirmedCard);
+        }
+
+        private void TryPlayConfirmedCard(CardRuntime card)
+        {
+            if (card == null || battleManager == null || battleManager.PlayerState == null)
+            {
+                return;
+            }
+
+            if (battleManager.TurnManager == null || !battleManager.TurnManager.IsPlayerTurn)
+            {
+                Debug.Log("Você só pode jogar cartas da sua mão no seu turno.");
+                return;
+            }
+
+            switch (card.CardType)
             {
                 case CardType.Creature:
-                    TryPlayCreature(clickedCard);
+                    TryPlayCreature(card);
                     break;
 
                 case CardType.Trap:
-                    TrySetTrap(clickedCard);
+                    TrySetTrap(card);
                     break;
 
                 case CardType.Spell:
-                    Debug.Log($"Clique em {clickedCard.CardName}: sistema de magia ainda será implementado.");
+                    Debug.Log($"Sistema de magia com alvo ainda será implementado. {card.CardName} não foi jogada.");
                     break;
 
                 case CardType.Equipment:
-                    Debug.Log($"Clique em {clickedCard.CardName}: sistema de equipamento ainda será implementado.");
+                    Debug.Log($"Sistema de equipamento ainda não foi implementado. {card.CardName} não foi jogada.");
                     break;
 
                 default:
-                    Debug.Log($"Tipo de carta não suportado: {clickedCard.CardType}.");
+                    Debug.Log($"Tipo de carta não suportado: {card.CardType}.");
                     break;
             }
         }
@@ -265,7 +294,7 @@ namespace CardGame.UI
 
             if (battleManager.PlayerState.TryPlayCreatureInFirstFreeSlot(card, out int slotIndex))
             {
-                Debug.Log($"Jogador colocou {card.CardName} no slot {slotIndex + 1} clicando na mão.");
+                Debug.Log($"Jogador confirmou e colocou {card.CardName} no slot {slotIndex + 1}.");
                 ForceRefreshHand();
                 return;
             }
@@ -283,7 +312,7 @@ namespace CardGame.UI
 
             if (battleManager.PlayerState.TrySetTrapInFirstFreeSlot(card, out int slotIndex))
             {
-                Debug.Log($"Jogador preparou armadilha {card.CardName} no slot {slotIndex + 1}.");
+                Debug.Log($"Jogador confirmou e preparou armadilha {card.CardName} no slot {slotIndex + 1}.");
                 ForceRefreshHand();
                 return;
             }
@@ -294,11 +323,17 @@ namespace CardGame.UI
         private void ForceRefreshHand()
         {
             lastHandCount = -1;
+            lastHoveredIndex = -1;
             RefreshIfNeeded();
         }
 
         private void RefreshCardTextsOnly()
         {
+            if (battleManager == null || battleManager.PlayerState == null)
+            {
+                return;
+            }
+
             IReadOnlyList<CardRuntime> cards = battleManager.PlayerState.Hand.Cards;
 
             for (int i = 0; i < spawnedCards.Count && i < cards.Count; i++)
@@ -316,27 +351,44 @@ namespace CardGame.UI
 
             return card.CardType switch
             {
-                CardType.Creature => new Color(0.12f, 0.30f, 0.68f, 0.90f),
-                CardType.Spell => new Color(0.32f, 0.16f, 0.62f, 0.90f),
-                CardType.Trap => new Color(0.62f, 0.32f, 0.10f, 0.90f),
-                CardType.Equipment => new Color(0.42f, 0.42f, 0.42f, 0.90f),
+                CardType.Creature => new Color(0.08f, 0.26f, 0.65f, 0.96f),
+                CardType.Spell => new Color(0.33f, 0.12f, 0.68f, 0.96f),
+                CardType.Trap => new Color(0.72f, 0.34f, 0.10f, 0.96f),
+                CardType.Equipment => new Color(0.42f, 0.42f, 0.42f, 0.96f),
                 _ => new Color(0.18f, 0.18f, 0.18f, 0.86f)
             };
         }
 
         private sealed class HandCardUI
         {
+            private readonly RectTransform rectTransform;
             private readonly Image background;
+            private readonly Text costText;
             private readonly Text nameText;
             private readonly Text typeText;
             private readonly Text statsText;
 
-            public HandCardUI(Image background, Text nameText, Text typeText, Text statsText)
+            public HandCardUI(
+                RectTransform rectTransform,
+                Image background,
+                Text costText,
+                Text nameText,
+                Text typeText,
+                Text statsText)
             {
+                this.rectTransform = rectTransform;
                 this.background = background;
+                this.costText = costText;
                 this.nameText = nameText;
                 this.typeText = typeText;
                 this.statsText = statsText;
+            }
+
+            public void SetTransform(Vector2 anchoredPosition, float rotationZ, int siblingIndex)
+            {
+                rectTransform.anchoredPosition = anchoredPosition;
+                rectTransform.localRotation = Quaternion.Euler(0f, 0f, rotationZ);
+                rectTransform.SetSiblingIndex(siblingIndex);
             }
 
             public void SetCard(CardRuntime card)
@@ -344,25 +396,27 @@ namespace CardGame.UI
                 if (card == null)
                 {
                     background.color = new Color(0.18f, 0.18f, 0.18f, 0.86f);
+                    costText.text = string.Empty;
                     nameText.text = "Vazio";
                     typeText.text = string.Empty;
                     statsText.text = string.Empty;
                     return;
                 }
 
+                costText.text = $"Custo {card.Data.Cost}";
                 nameText.text = ShortName(card.CardName);
                 typeText.text = card.CardType.ToString();
 
                 if (card.CardType == CardType.Creature)
                 {
                     statsText.text =
-                        $"Custo {card.Data.Cost}\n" +
-                        $"ATK {card.CurrentAttack} HP {card.CurrentHealth}\n" +
-                        $"SPD {card.CurrentSpeed} DEF {card.CurrentDefense}";
+                        $"ATK {card.CurrentAttack}  HP {card.CurrentHealth}\n" +
+                        $"SPD {card.CurrentSpeed}  DEF {card.CurrentDefense}\n" +
+                        $"FOC {card.CurrentFocus}  RES {card.CurrentResistance}";
                 }
                 else
                 {
-                    statsText.text = $"Custo {card.Data.Cost}";
+                    statsText.text = ShortDescription(card.Data.Description);
                 }
             }
 
@@ -379,6 +433,21 @@ namespace CardGame.UI
                 }
 
                 return value.Substring(0, 16) + "...";
+            }
+
+            private string ShortDescription(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return "Toque para ver.";
+                }
+
+                if (value.Length <= 40)
+                {
+                    return value;
+                }
+
+                return value.Substring(0, 40) + "...";
             }
         }
     }
