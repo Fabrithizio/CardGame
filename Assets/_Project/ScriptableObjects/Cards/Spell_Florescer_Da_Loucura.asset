@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: cd7b5723-5187-41aa-b160-376168e43690
   cardName: Florescer da Loucura
   description: "Magia de a\xE7\xE3o: criatura inimiga perde 3 Speed e 2 Focus temporariamente."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 7b913a4a0a4a45949bca4a4c54b33863, type: 3}
   cardType: 1
   rarity: 1
   cost: 3

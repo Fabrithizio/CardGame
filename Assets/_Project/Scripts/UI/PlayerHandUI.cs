@@ -188,25 +188,30 @@ namespace CardGame.UI
             outline.effectColor = new Color(0f, 0f, 0f, 0.72f);
             outline.effectDistance = new Vector2(3f, -3f);
 
+            Shadow shadow = cardObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.58f);
+            shadow.effectDistance = new Vector2(0f, -5f);
+
             Button button = cardObject.AddComponent<Button>();
             button.targetGraphic = background;
             button.onClick.AddListener(() => HandleCardClicked(handIndex));
 
             VerticalLayoutGroup vertical = cardObject.AddComponent<VerticalLayoutGroup>();
-            vertical.padding = new RectOffset(10, 10, 12, 10);
-            vertical.spacing = 5;
+            vertical.padding = new RectOffset(8, 8, 7, 8);
+            vertical.spacing = 3;
             vertical.childAlignment = TextAnchor.MiddleCenter;
             vertical.childControlWidth = true;
             vertical.childControlHeight = false;
             vertical.childForceExpandWidth = true;
             vertical.childForceExpandHeight = false;
 
-            Text costText = CreateText(cardObject.transform, "Cost", typeFontSize + 3, FontStyle.Bold, 26f);
-            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 58f);
-            Text typeText = CreateText(cardObject.transform, "Type", typeFontSize, FontStyle.Italic, 30f);
-            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 76f);
+            Text costText = CreateText(cardObject.transform, "Cost", typeFontSize + 3, FontStyle.Bold, 18f);
+            Image artworkImage = CreateArtwork(cardObject.transform, "Artwork", cardSize.x - 16f, 72f);
+            Text nameText = CreateText(cardObject.transform, "Name", nameFontSize, FontStyle.Bold, 34f);
+            Text typeText = CreateText(cardObject.transform, "Type", typeFontSize, FontStyle.Italic, 17f);
+            Text statsText = CreateText(cardObject.transform, "Stats", statsFontSize, FontStyle.Normal, 38f);
 
-            HandCardUI cardUI = new HandCardUI(rect, background, costText, nameText, typeText, statsText);
+            HandCardUI cardUI = new HandCardUI(rect, background, artworkImage, costText, nameText, typeText, statsText);
             cardUI.SetCard(card);
             cardUI.SetSize(cardSize);
 
@@ -235,6 +240,23 @@ namespace CardGame.UI
             rect.sizeDelta = new Vector2(cardSize.x - 20f, height);
 
             return text;
+        }
+
+        private Image CreateArtwork(Transform parent, string objectName, float width, float height)
+        {
+            GameObject artworkObject = new GameObject(objectName);
+            artworkObject.transform.SetParent(parent, false);
+
+            RectTransform rect = artworkObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(width, height);
+
+            Image image = artworkObject.AddComponent<Image>();
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            artworkObject.SetActive(false);
+
+            return image;
         }
 
         private void RefreshCardTransforms()
@@ -410,15 +432,17 @@ namespace CardGame.UI
         {
             private readonly RectTransform rectTransform;
             private readonly Image background;
+            private readonly Image artworkImage;
             private readonly Text costText;
             private readonly Text nameText;
             private readonly Text typeText;
             private readonly Text statsText;
 
-            public HandCardUI(RectTransform rectTransform, Image background, Text costText, Text nameText, Text typeText, Text statsText)
+            public HandCardUI(RectTransform rectTransform, Image background, Image artworkImage, Text costText, Text nameText, Text typeText, Text statsText)
             {
                 this.rectTransform = rectTransform;
                 this.background = background;
+                this.artworkImage = artworkImage;
                 this.costText = costText;
                 this.nameText = nameText;
                 this.typeText = typeText;
@@ -428,6 +452,13 @@ namespace CardGame.UI
             public void SetSize(Vector2 size)
             {
                 rectTransform.sizeDelta = size;
+
+                float innerWidth = Mathf.Max(12f, size.x - 16f);
+                costText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(size.y * 0.10f, 16f, 22f));
+                artworkImage.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(size.y * 0.36f, 56f, 82f));
+                nameText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(size.y * 0.17f, 26f, 38f));
+                typeText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(size.y * 0.09f, 14f, 20f));
+                statsText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(size.y * 0.19f, 30f, 44f));
             }
 
             public void SetTransform(Vector2 anchoredPosition, float rotationZ, int siblingIndex)
@@ -442,6 +473,8 @@ namespace CardGame.UI
                 if (card == null)
                 {
                     background.color = new Color(0.18f, 0.18f, 0.18f, 0.86f);
+                    artworkImage.gameObject.SetActive(false);
+                    artworkImage.sprite = null;
                     costText.text = string.Empty;
                     nameText.text = "Vazio";
                     typeText.text = string.Empty;
@@ -449,9 +482,15 @@ namespace CardGame.UI
                     return;
                 }
 
-                costText.text = $"Custo {card.Data.Cost}";
+                Sprite artwork = card.Data != null ? card.Data.Artwork : null;
+                artworkImage.gameObject.SetActive(artwork != null);
+                artworkImage.sprite = artwork;
+                artworkImage.color = Color.white;
+
+                background.color = GetColorByCardType(card);
+                costText.text = $"CUSTO {card.Data.Cost}";
                 nameText.text = ShortName(card.CardName);
-                typeText.text = card.CardType.ToString();
+                typeText.text = GetTypeLabel(card.CardType);
 
                 if (card.CardType == CardType.Creature)
                 {
@@ -494,6 +533,30 @@ namespace CardGame.UI
                 }
 
                 return value.Substring(0, 45) + "...";
+            }
+
+            private Color GetColorByCardType(CardRuntime card)
+            {
+                return card.CardType switch
+                {
+                    CardType.Creature => new Color(0.06f, 0.18f, 0.45f, 0.96f),
+                    CardType.Spell => new Color(0.28f, 0.10f, 0.48f, 0.96f),
+                    CardType.Trap => new Color(0.54f, 0.24f, 0.08f, 0.96f),
+                    CardType.Equipment => new Color(0.34f, 0.34f, 0.36f, 0.96f),
+                    _ => new Color(0.18f, 0.18f, 0.18f, 0.86f)
+                };
+            }
+
+            private string GetTypeLabel(CardType cardType)
+            {
+                return cardType switch
+                {
+                    CardType.Creature => "CRIATURA",
+                    CardType.Spell => "MAGIA",
+                    CardType.Trap => "ARMADILHA",
+                    CardType.Equipment => "EQUIP.",
+                    _ => "CARTA"
+                };
             }
         }
     }

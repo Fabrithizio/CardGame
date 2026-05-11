@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: 34c46b9f-329b-4b11-944d-980b0f1c6666
   cardName: "Cavaleiro Rubro dos Estilha\xE7os"
   description: Guerreiro agressivo que atravessa defesas.
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: cd987cd4b058283459003993a05aba02, type: 3}
   cardType: 0
   rarity: 2
   cost: 5

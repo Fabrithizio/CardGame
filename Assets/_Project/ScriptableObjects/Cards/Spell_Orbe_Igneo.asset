@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: fa9abc4a-ca52-40de-a4f2-d38f27b8ee86
   cardName: "Orbe \xCDgneo"
   description: "Magia r\xE1pida: causa 2 de dano a 1 criatura em campo."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a247a5efd2edd1d4c97854c8dc42db71, type: 3}
   cardType: 1
   rarity: 0
   cost: 1

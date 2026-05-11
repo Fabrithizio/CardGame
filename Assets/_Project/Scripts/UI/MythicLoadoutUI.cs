@@ -145,7 +145,7 @@ namespace CardGame.UI
                 button.onClick.AddListener(() => TryUsePlayerMythic(slotIndex));
             }
 
-            return new MythicSlotUI(outer, innerImage, label);
+            return new MythicSlotUI(outer, innerImage, label, circleSprite);
         }
 
         private void TryUsePlayerMythic(int slotIndex)
@@ -355,12 +355,14 @@ namespace CardGame.UI
             private readonly Image outer;
             private readonly Image inner;
             private readonly Text label;
+            private readonly Sprite emptySprite;
 
-            public MythicSlotUI(Image outer, Image inner, Text label)
+            public MythicSlotUI(Image outer, Image inner, Text label, Sprite emptySprite)
             {
                 this.outer = outer;
                 this.inner = inner;
                 this.label = label;
+                this.emptySprite = emptySprite;
             }
 
             public void SetState(MythicRuntime mythic, Color availableColor, Color usedColor, Color emptyColor, bool revealNumbers, int fallbackNumber)
@@ -368,15 +370,19 @@ namespace CardGame.UI
                 if (mythic == null)
                 {
                     outer.color = new Color(0.02f, 0.02f, 0.03f, 0.90f);
+                    inner.sprite = emptySprite;
                     inner.color = emptyColor;
                     label.text = string.Empty;
                     return;
                 }
 
                 bool used = mythic.IsUsed;
+                bool canRevealIcon = revealNumbers || mythic.IsRevealed;
+                Sprite icon = canRevealIcon && mythic.Data != null ? mythic.Data.Icon : null;
 
                 outer.color = new Color(0.02f, 0.02f, 0.03f, 0.96f);
-                inner.color = used ? usedColor : availableColor;
+                inner.sprite = icon != null ? icon : emptySprite;
+                inner.color = icon != null ? (used ? new Color(0.34f, 0.34f, 0.38f, 0.88f) : Color.white) : (used ? usedColor : availableColor);
                 label.text = used ? "×" : (revealNumbers ? fallbackNumber.ToString() : "?");
             }
         }

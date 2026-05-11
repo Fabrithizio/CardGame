@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: b453e68f-91ae-45f4-a43a-4dba60d7ba4b
   cardName: "Colosso R\xFAnico Dourado"
   description: Gigante de pedra que segura a linha de frente.
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 99fcd093b6ad60a4c8913832ebdde413, type: 3}
   cardType: 0
   rarity: 2
   cost: 5

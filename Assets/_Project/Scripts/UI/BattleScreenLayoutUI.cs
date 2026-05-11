@@ -1,5 +1,6 @@
 // Caminho: Assets/_Project/Scripts/UI/BattleScreenLayoutUI.cs
-// Descrição: Layout mestre mobile em retrato, com proporção mais próxima da referência e zonas ajustáveis em tempo real.
+// Descrição: Layout mestre mobile em retrato, com proporção próxima da referência.
+// Correção Pass 13: OnValidate não cria Canvas/objetos para evitar warnings "SendMessage cannot be called during Awake/OnValidate".
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -141,19 +142,17 @@ namespace CardGame.UI
         {
             if (updateLayoutEveryFrame)
             {
+                EnsureBuilt();
                 ApplyLayout();
             }
         }
 
         private void OnValidate()
         {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            EnsureBuilt();
-            ApplyLayout();
+            // Não criar Canvas, GameObject, SetParent ou AddComponent aqui.
+            // O Unity pode chamar OnValidate durante Awake/CheckConsistency e isso gera:
+            // "SendMessage cannot be called during Awake, CheckConsistency, or OnValidate".
+            // O Update aplica as mudanças em tempo real quando estiver em Play.
         }
 
         private void OnDestroy()
@@ -284,7 +283,10 @@ namespace CardGame.UI
 
         private void ApplyLayout()
         {
-            EnsureBuilt();
+            if (root == null || zones.Count == 0)
+            {
+                return;
+            }
 
             if (canvasScaler != null)
             {

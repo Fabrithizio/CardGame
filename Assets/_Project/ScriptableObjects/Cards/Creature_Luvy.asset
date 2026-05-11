@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: 37c75309-9fa6-41d1-a506-afd9d75edf89
   cardName: Luvy
   description: "Esp\xEDrito aqu\xE1tico de suporte e prote\xE7\xE3o."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 7b5bf1be7216ef0468f8e7e33811c656, type: 3}
   cardType: 0
   rarity: 1
   cost: 3

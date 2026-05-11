@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: 133d9258-847b-461c-a7b1-491b3dc1c140
   cardName: Turga
   description: "Guardi\xE3o natural focado em defesa e prote\xE7\xE3o."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 99fcd093b6ad60a4c8913832ebdde413, type: 3}
   cardType: 0
   rarity: 1
   cost: 3

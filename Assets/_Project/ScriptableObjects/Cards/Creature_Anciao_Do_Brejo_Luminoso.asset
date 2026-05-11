@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: 3d8d9079-16aa-490c-8164-55b28214fa27
   cardName: "Anci\xE3o do Brejo Luminoso"
   description: "Guardi\xE3o vivo do p\xE2ntano, resistente e regenerativo."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 3e156058cbc52d5428a3b9c7b12917d5, type: 3}
   cardType: 0
   rarity: 2
   cost: 5

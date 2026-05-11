@@ -37,6 +37,7 @@ namespace CardGame.UI
         private GameObject overlayObject;
         private GameObject panelObject;
         private Image panelBackground;
+        private Image artworkImage;
         private Text titleText;
         private Text typeText;
         private Text statsText;
@@ -195,10 +196,32 @@ namespace CardGame.UI
 
             titleText = CreateText("Title", titleFontSize, FontStyle.Bold, 78f, TextAnchor.MiddleCenter);
             typeText = CreateText("Type", infoFontSize, FontStyle.Italic, 42f, TextAnchor.MiddleCenter);
+            artworkImage = CreateArtwork("Artwork", panelSize.x - 52f, Mathf.Clamp(panelSize.y * 0.27f, 220f, 330f));
             statsText = CreateText("Stats", infoFontSize, FontStyle.Bold, 170f, TextAnchor.MiddleCenter);
             descriptionText = CreateText("Description", descriptionFontSize, FontStyle.Normal, 230f, TextAnchor.UpperLeft);
 
             CreateButtonRow();
+        }
+
+        private Image CreateArtwork(string objectName, float width, float height)
+        {
+            GameObject artworkObject = new GameObject(objectName);
+            artworkObject.transform.SetParent(panelObject.transform, false);
+
+            RectTransform rect = artworkObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(width, height);
+
+            Image image = artworkObject.AddComponent<Image>();
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            artworkObject.SetActive(false);
+
+            Outline outline = artworkObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            return image;
         }
 
         private Text CreateText(string objectName, int fontSize, FontStyle fontStyle, float height, TextAnchor alignment)
@@ -292,6 +315,10 @@ namespace CardGame.UI
             }
 
             panelBackground.color = GetColorByCardType(selectedCard.CardType);
+
+            Sprite artwork = selectedCard.Data != null ? selectedCard.Data.Artwork : null;
+            artworkImage.gameObject.SetActive(artwork != null);
+            artworkImage.sprite = artwork;
 
             titleText.text = selectedCard.CardName;
             typeText.text = $"{selectedCard.CardType} • {selectedCard.Data.Rarity} • Custo {selectedCard.Data.Cost}";

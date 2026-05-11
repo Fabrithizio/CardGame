@@ -1,5 +1,5 @@
 // Caminho: Assets/_Project/Scripts/UI/BattleBoardUI.cs
-// Descrição: Campo com 5 criaturas maiores, 6 armadilhas/magias proporcionais e layout recalculado em tempo real.
+// Descrição: Campo clicável com visual mais transparente para permitir a skin da arena aparecer.
 
 using System.Collections.Generic;
 using CardGame.Battle;
@@ -31,10 +31,14 @@ namespace CardGame.UI
         [SerializeField] private float trapCounterWidth = 84f;
         [SerializeField] [Range(0.55f, 1f)] private float trapHeightUse = 0.94f;
 
-        [Header("Visual das Linhas")]
-        [SerializeField] private bool showTrapBandBackground = true;
-        [SerializeField] private Color trapBandColor = new Color(0.28f, 0.23f, 0.12f, 0.48f);
-        [SerializeField] private Color boardLineColor = new Color(0.90f, 0.74f, 0.34f, 0.18f);
+        [Header("Visual")]
+        [SerializeField] private bool showTrapBandBackground = false;
+        [SerializeField] private Color trapBandColor = new Color(0.28f, 0.23f, 0.12f, 0.18f);
+        [SerializeField] private Color boardLineColor = new Color(0.90f, 0.74f, 0.34f, 0.10f);
+        [SerializeField] private Color emptyCreaturePlayerColor = new Color(0.10f, 0.16f, 0.34f, 0.32f);
+        [SerializeField] private Color emptyCreatureEnemyColor = new Color(0.36f, 0.12f, 0.13f, 0.32f);
+        [SerializeField] private Color emptyTrapPlayerColor = new Color(0.08f, 0.14f, 0.32f, 0.30f);
+        [SerializeField] private Color emptyTrapEnemyColor = new Color(0.30f, 0.10f, 0.16f, 0.30f);
 
         [Header("Texto")]
         [SerializeField] private int nameFontSize = 15;
@@ -89,12 +93,7 @@ namespace CardGame.UI
 
         private void OnValidate()
         {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            ApplyRuntimeLayout();
+            // Não cria nem reposiciona objetos aqui.
         }
 
         private void CreateBoard()
@@ -156,6 +155,7 @@ namespace CardGame.UI
 
             Image bandImage = bandObject.AddComponent<Image>();
             bandImage.color = trapBandColor;
+            bandImage.enabled = showTrapBandBackground;
             bandImage.raycastTarget = false;
 
             Outline bandOutline = bandObject.AddComponent<Outline>();
@@ -172,8 +172,8 @@ namespace CardGame.UI
 
             Image counterBg = counterObject.AddComponent<Image>();
             counterBg.color = isPlayerBand
-                ? new Color(0.02f, 0.10f, 0.20f, 0.96f)
-                : new Color(0.08f, 0.05f, 0.16f, 0.96f);
+                ? new Color(0.02f, 0.10f, 0.20f, 0.88f)
+                : new Color(0.08f, 0.05f, 0.16f, 0.88f);
 
             Outline counterOutline = counterObject.AddComponent<Outline>();
             counterOutline.effectColor = new Color(0f, 0f, 0f, 0.65f);
@@ -208,8 +208,12 @@ namespace CardGame.UI
             background.color = GetCreatureEmptyColor(isPlayerSlot);
 
             Outline outline = slotObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.22f);
+            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.28f);
             outline.effectDistance = new Vector2(2f, -2f);
+
+            Shadow shadow = slotObject.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.55f);
+            shadow.effectDistance = new Vector2(0f, -4f);
 
             Button button = slotObject.AddComponent<Button>();
             button.targetGraphic = background;
@@ -224,19 +228,20 @@ namespace CardGame.UI
             }
 
             VerticalLayoutGroup vertical = slotObject.AddComponent<VerticalLayoutGroup>();
-            vertical.padding = new RectOffset(8, 8, 10, 8);
-            vertical.spacing = 4;
+            vertical.padding = new RectOffset(8, 8, 8, 8);
+            vertical.spacing = 3;
             vertical.childAlignment = TextAnchor.MiddleCenter;
             vertical.childControlWidth = true;
             vertical.childControlHeight = false;
             vertical.childForceExpandWidth = true;
             vertical.childForceExpandHeight = false;
 
-            Text nameText = CreateSizedText(slotObject.transform, "Name", nameFontSize, FontStyle.Bold, creatureSize.x - 16f, 54f);
-            Text statsText = CreateSizedText(slotObject.transform, "Stats", statsFontSize, FontStyle.Normal, creatureSize.x - 16f, 56f);
-            Text statusText = CreateSizedText(slotObject.transform, "Status", statusFontSize, FontStyle.Italic, creatureSize.x - 16f, 42f);
+            Image artworkImage = CreateSizedImage(slotObject.transform, "Artwork", creatureSize.x - 16f, 86f);
+            Text nameText = CreateSizedText(slotObject.transform, "Name", nameFontSize, FontStyle.Bold, creatureSize.x - 16f, 36f);
+            Text statsText = CreateSizedText(slotObject.transform, "Stats", statsFontSize, FontStyle.Normal, creatureSize.x - 16f, 42f);
+            Text statusText = CreateSizedText(slotObject.transform, "Status", statusFontSize, FontStyle.Italic, creatureSize.x - 16f, 24f);
 
-            return new CardSlotUI(rect, background, nameText, statsText, statusText, isPlayerSlot);
+            return new CardSlotUI(rect, background, artworkImage, nameText, statsText, statusText, isPlayerSlot, emptyCreaturePlayerColor, emptyCreatureEnemyColor);
         }
 
         private TrapSlotUI CreateTrapSlot(RectTransform parent, bool isPlayerSlot)
@@ -255,16 +260,14 @@ namespace CardGame.UI
             }
 
             Image background = slotObject.AddComponent<Image>();
-            background.color = isPlayerSlot
-                ? new Color(0.10f, 0.19f, 0.52f, 0.86f)
-                : new Color(0.44f, 0.14f, 0.24f, 0.86f);
+            background.color = isPlayerSlot ? emptyTrapPlayerColor : emptyTrapEnemyColor;
 
             Outline outline = slotObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.20f);
+            outline.effectColor = new Color(0.90f, 0.74f, 0.34f, 0.10f);
             outline.effectDistance = new Vector2(2f, -2f);
 
             Text text = CreateSizedText(slotObject.transform, "Trap Text", trapFontSize, FontStyle.Bold, trapSize.x - 10f, trapSize.y - 4f);
-            return new TrapSlotUI(rect, background, text, isPlayerSlot);
+            return new TrapSlotUI(rect, background, text, isPlayerSlot, emptyTrapPlayerColor, emptyTrapEnemyColor);
         }
 
         private Text CreateFullText(Transform parent, string objectName, int fontSize, FontStyle fontStyle)
@@ -318,6 +321,23 @@ namespace CardGame.UI
             return text;
         }
 
+        private Image CreateSizedImage(Transform parent, string objectName, float width, float height)
+        {
+            GameObject imageObject = new GameObject(objectName);
+            imageObject.transform.SetParent(parent, false);
+
+            RectTransform rect = imageObject.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(width, height);
+
+            Image image = imageObject.AddComponent<Image>();
+            image.color = Color.white;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+            imageObject.SetActive(false);
+
+            return image;
+        }
+
         private void ApplyRuntimeLayout()
         {
             if (!built)
@@ -359,6 +379,7 @@ namespace CardGame.UI
                 rect.sizeDelta = new Vector2(slotWidth, slotHeight);
                 rect.anchoredPosition = new Vector2(startX + i * (slotWidth + spacing), 0f);
                 rect.localScale = Vector3.one;
+                slots[i].ApplySize(slotWidth, slotHeight);
             }
         }
 
@@ -564,9 +585,7 @@ namespace CardGame.UI
 
         private Color GetCreatureEmptyColor(bool isPlayerSlot)
         {
-            return isPlayerSlot
-                ? new Color(0.11f, 0.23f, 0.56f, 0.34f)
-                : new Color(0.46f, 0.15f, 0.18f, 0.34f);
+            return isPlayerSlot ? emptyCreaturePlayerColor : emptyCreatureEnemyColor;
         }
 
         private sealed class CardSlotUI
@@ -574,41 +593,78 @@ namespace CardGame.UI
             public RectTransform RectTransform { get; }
 
             private readonly Image background;
+            private readonly Image artworkImage;
             private readonly Text nameText;
             private readonly Text statsText;
             private readonly Text statusText;
             private readonly bool isPlayerSlot;
+            private readonly Color emptyPlayerColor;
+            private readonly Color emptyEnemyColor;
 
-            public CardSlotUI(RectTransform rectTransform, Image background, Text nameText, Text statsText, Text statusText, bool isPlayerSlot)
+            public CardSlotUI(RectTransform rectTransform, Image background, Image artworkImage, Text nameText, Text statsText, Text statusText, bool isPlayerSlot, Color emptyPlayerColor, Color emptyEnemyColor)
             {
                 RectTransform = rectTransform;
                 this.background = background;
+                this.artworkImage = artworkImage;
                 this.nameText = nameText;
                 this.statsText = statsText;
                 this.statusText = statusText;
                 this.isPlayerSlot = isPlayerSlot;
+                this.emptyPlayerColor = emptyPlayerColor;
+                this.emptyEnemyColor = emptyEnemyColor;
+            }
+
+            public void ApplySize(float width, float height)
+            {
+                float innerWidth = Mathf.Max(16f, width - 18f);
+
+                if (artworkImage != null)
+                {
+                    artworkImage.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(height * 0.43f, 46f, 110f));
+                }
+
+                nameText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(height * 0.17f, 22f, 40f));
+                statsText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(height * 0.20f, 28f, 46f));
+                statusText.rectTransform.sizeDelta = new Vector2(innerWidth, Mathf.Clamp(height * 0.13f, 18f, 30f));
             }
 
             public void SetCard(CardRuntime card, bool isSelected, Color selectedColor)
             {
                 if (card == null)
                 {
-                    background.color = isPlayerSlot
-                        ? new Color(0.11f, 0.23f, 0.56f, 0.34f)
-                        : new Color(0.46f, 0.15f, 0.18f, 0.34f);
+                    if (artworkImage != null)
+                    {
+                        artworkImage.gameObject.SetActive(false);
+                        artworkImage.sprite = null;
+                    }
 
-                    nameText.text = "Vazio";
+                    background.color = isPlayerSlot ? emptyPlayerColor : emptyEnemyColor;
+                    nameText.color = new Color(1f, 1f, 1f, 0.42f);
+                    statsText.color = new Color(1f, 1f, 1f, 0.26f);
+                    statusText.color = new Color(1f, 1f, 1f, 0.26f);
+                    nameText.text = "CRIATURA";
                     statsText.text = string.Empty;
                     statusText.text = string.Empty;
                     return;
                 }
 
+                if (artworkImage != null)
+                {
+                    Sprite artwork = card.Data != null ? card.Data.Artwork : null;
+                    artworkImage.gameObject.SetActive(artwork != null);
+                    artworkImage.sprite = artwork;
+                    artworkImage.color = Color.white;
+                }
+
                 background.color = isSelected
                     ? selectedColor
                     : isPlayerSlot
-                        ? new Color(0.11f, 0.23f, 0.56f, 0.92f)
-                        : new Color(0.46f, 0.15f, 0.18f, 0.92f);
+                        ? new Color(0.11f, 0.23f, 0.56f, 0.86f)
+                        : new Color(0.46f, 0.15f, 0.18f, 0.86f);
 
+                nameText.color = Color.white;
+                statsText.color = Color.white;
+                statusText.color = new Color(0.92f, 0.96f, 1f, 0.86f);
                 nameText.text = ShortName(card.CardName);
                 statsText.text = $"ATK {card.CurrentAttack}  HP {card.CurrentHealth}\nSPD {card.CurrentSpeed}  DEF {card.CurrentDefense}";
                 statusText.text = GetStatusText(card);
@@ -654,30 +710,31 @@ namespace CardGame.UI
             private readonly Image background;
             private readonly Text text;
             private readonly bool isPlayerSlot;
+            private readonly Color emptyPlayerColor;
+            private readonly Color emptyEnemyColor;
 
-            public TrapSlotUI(RectTransform rectTransform, Image background, Text text, bool isPlayerSlot)
+            public TrapSlotUI(RectTransform rectTransform, Image background, Text text, bool isPlayerSlot, Color emptyPlayerColor, Color emptyEnemyColor)
             {
                 RectTransform = rectTransform;
                 this.background = background;
                 this.text = text;
                 this.isPlayerSlot = isPlayerSlot;
+                this.emptyPlayerColor = emptyPlayerColor;
+                this.emptyEnemyColor = emptyEnemyColor;
             }
 
             public void SetTrap(CardRuntime card)
             {
                 if (card == null)
                 {
-                    background.color = isPlayerSlot
-                        ? new Color(0.12f, 0.20f, 0.50f, 0.42f)
-                        : new Color(0.42f, 0.14f, 0.24f, 0.42f);
-
-                    text.text = "Trap";
+                    background.color = isPlayerSlot ? emptyPlayerColor : emptyEnemyColor;
+                    text.text = string.Empty;
                     return;
                 }
 
                 background.color = isPlayerSlot
-                    ? new Color(0.66f, 0.36f, 0.12f, 0.92f)
-                    : new Color(0.76f, 0.24f, 0.12f, 0.92f);
+                    ? new Color(0.66f, 0.36f, 0.12f, 0.86f)
+                    : new Color(0.76f, 0.24f, 0.12f, 0.86f);
 
                 text.text = isPlayerSlot ? ShortName(card.CardName) : "???";
             }

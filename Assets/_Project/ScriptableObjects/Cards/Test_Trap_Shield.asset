@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: bdfd093e-9c2f-4703-8f57-c80d667c3a09
   cardName: Armadilha de Teste
   description: 
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: f6d1fde090203364499945f0798f1c87, type: 3}
   cardType: 2
   rarity: 0
   cost: 1

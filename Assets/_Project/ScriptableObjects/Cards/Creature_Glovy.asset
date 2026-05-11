@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: af73c640-fda8-472a-b030-ae160a5aaf9a
   cardName: Glovy
   description: "Esp\xEDrito sombrio que atrapalha o inimigo."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 9b3b10682f264334db3f7502e8119d67, type: 3}
   cardType: 0
   rarity: 2
   cost: 4

@@ -16,7 +16,7 @@ MonoBehaviour:
   cardName: Raio de Ruptura
   description: "Magia de a\xE7\xE3o: causa 4 de dano a uma criatura inimiga ou ao
     jogador sem defesa."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a247a5efd2edd1d4c97854c8dc42db71, type: 3}
   cardType: 1
   rarity: 2
   cost: 4

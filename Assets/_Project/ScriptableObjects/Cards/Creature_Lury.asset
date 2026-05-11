@@ -15,7 +15,7 @@ MonoBehaviour:
   cardId: 5b15f39f-f37e-4b8a-9c4f-9a7a1bdd14ec
   cardName: Lury
   description: "Esp\xEDrito de fogo veloz que espalha queimadura."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: a248d0008118a66468d7cb72278c7f6c, type: 3}
   cardType: 0
   rarity: 1
   cost: 3

@@ -146,11 +146,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca65c1696913e664e8f97b35efd56ee0, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleScreenLayoutUI
   sortingOrder: 0
   referenceResolution: {x: 1080, y: 2400}
   matchWidthOrHeight: 0.65
+  updateLayoutEveryFrame: 1
+  enemyHudMinY: 0.855
+  enemyBoardMinY: 0.605
+  combatMinY: 0.485
+  playerBoardMinY: 0.24
+  bottomHudMaxY: 0.24
+  boardLeft: 0.035
+  boardCardsRight: 0.855
+  mythicLeft: 0.872
+  mythicRight: 0.985
+  creatureRowMinY: 0.455
+  creatureRowMaxY: 0.965
+  trapRowMinY: 0.1
+  trapRowMaxY: 0.405
+  bottomLeft: 0.02
+  playerDeckRight: 0.105
+  playerHealthLeft: 0.115
+  playerHealthRight: 0.34
+  playerHandLeft: 0.22
+  playerHandRight: 0.8
+  turnButtonLeft: 0.82
+  turnButtonRight: 0.97
   showDebugZoneNames: 0
 --- !u!4 &34823257
 Transform:
@@ -366,14 +388,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleBoardUI
   battleManager: {fileID: 1177670537}
-  cardSize: {x: 178, y: 238}
-  cardSpacing: 6
+  updateLayoutEveryFrame: 1
+  creatureSize: {x: 146, y: 204}
+  creatureSpacing: 8
+  creatureHeightUse: 0.94
   trapSize: {x: 178, y: 86}
   trapSpacing: 7
+  trapCounterWidth: 120
+  trapHeightUse: 0.82
+  showTrapBandBackground: 0
+  trapBandColor: {r: 0.28, g: 0.23, b: 0.12, a: 0.18}
+  boardLineColor: {r: 0.9, g: 0.74, b: 0.34, a: 0.24}
+  emptyCreaturePlayerColor: {r: 0.08, g: 0.13, b: 0.28, a: 0.46}
+  emptyCreatureEnemyColor: {r: 0.28, g: 0.09, b: 0.12, a: 0.46}
+  emptyTrapPlayerColor: {r: 0.06, g: 0.1, b: 0.22, a: 0.42}
+  emptyTrapEnemyColor: {r: 0.24, g: 0.08, b: 0.12, a: 0.42}
   nameFontSize: 15
   statsFontSize: 12
   statusFontSize: 9
   trapFontSize: 12
+  trapCounterFontSize: 18
   selectedColor: {r: 0.15, g: 0.85, b: 1, a: 0.95}
 --- !u!4 &427482259
 Transform:
@@ -739,12 +773,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.PlayerHandUI
   battleManager: {fileID: 1177670537}
   cardPreviewUI: {fileID: 405369684}
-  useMobileLayoutPreset: 1
+  updateLayoutEveryFrame: 1
   cardSize: {x: 138, y: 198}
   cardSpacing: -54
   anchorPosition: {x: 0, y: 34}
   maxFanAngle: 12
   selectedLift: 26
+  fanCurve: 24
   nameFontSize: 13
   statsFontSize: 10
   typeFontSize: 9
@@ -872,7 +907,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.TurnControlUI
   battleManager: {fileID: 1177670537}
-  fontSize: 16
+  updateLayoutEveryFrame: 1
+  maxButtonSize: {x: 164, y: 164}
+  fontSize: 18
+  outerColor: {r: 0.88, g: 0.68, b: 0.3, a: 1}
   buttonColor: {r: 0.12, g: 0.42, b: 0.78, a: 0.95}
   disabledColor: {r: 0.12, g: 0.12, b: 0.12, a: 0.55}
 --- !u!4 &1096583061
@@ -1140,6 +1178,107 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1576481263
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1576481265}
+  - component: {fileID: 1576481264}
+  m_Layer: 0
+  m_Name: BattleScreenArtUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1576481264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576481263}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b427b4dafd799a4ab64a1900e522e07, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleScreenArtUI
+  arenaBackgroundSprite: {fileID: 21300000, guid: 0b6610e4766905a4db603fb09e4ed987, type: 3}
+  combatBandSprite: {fileID: 21300000, guid: 2da196ebf1ca1d9418990bedc1fafc60, type: 3}
+  creatureSlotSprite: {fileID: 21300000, guid: 5db2a5fb7588943418fe4ff8bb17ca65, type: 3}
+  trapSlotSprite: {fileID: 21300000, guid: f60d4115755a8824fb1939dad0c68560, type: 3}
+  cardBackSprite: {fileID: 21300000, guid: 702674c45bb2d0742bd3f3d0124591bb, type: 3}
+  mythicSlotSprite: {fileID: -6946012761199627600, guid: 29f8e07a139007e408718be833d5f8fb, type: 3}
+  hudLeftPanelSprite: {fileID: 21300000, guid: eefebafdb77234c4ea7f8a713999ba9a, type: 3}
+  hudStatusPanelSprite: {fileID: 21300000, guid: 206f60a403095e0419a500c4e95d0447, type: 3}
+  mainButtonFrameSprite: {fileID: 21300000, guid: 2ad7e7028edd33d4dac29a31de5a7306, type: 3}
+  sortingOrder: -20
+  showDecorativeCreatureSlots: 0
+  showDecorativeTrapSlots: 0
+  showDecorativeMythicSlots: 0
+  showHudPanels: 0
+  showMainButtonFrame: 1
+  arenaTint: {r: 0.7, g: 0.76, b: 0.9, a: 1}
+  preserveArenaAspect: 0
+  arenaSize: {x: 1080, y: 2400}
+  arenaPosition: {x: 0, y: 0}
+  showReadabilityOverlay: 1
+  readabilityOverlayColor: {r: 0, g: 0, b: 0, a: 0.34}
+  showPlayMats: 1
+  playMatColor: {r: 0.02, g: 0.025, b: 0.045, a: 0.42}
+  playMatOutlineColor: {r: 0.8, g: 0.64, b: 0.3, a: 0.28}
+  enemyPlayMatSize: {x: 1010, y: 520}
+  enemyPlayMatPosition: {x: 0, y: 590}
+  playerPlayMatSize: {x: 1010, y: 520}
+  playerPlayMatPosition: {x: 0, y: -480}
+  combatBandSize: {x: 1080, y: 285}
+  combatBandPosition: {x: 0, y: 0}
+  combatBandTint: {r: 0.86, g: 0.9, b: 1, a: 0.86}
+  creatureSlotSize: {x: 165, y: 230}
+  creatureSlotSpacing: 8
+  enemyCreatureRowPosition: {x: 0, y: 650}
+  playerCreatureRowPosition: {x: 0, y: -430}
+  trapSlotSize: {x: 135, y: 88}
+  trapSlotSpacing: 7
+  enemyTrapRowPosition: {x: 44, y: 418}
+  playerTrapRowPosition: {x: 44, y: -665}
+  trapCounterPanelSize: {x: 118, y: 108}
+  enemyTrapCounterPosition: {x: -420, y: 418}
+  playerTrapCounterPosition: {x: -420, y: -665}
+  trapCounterColor: {r: 0.015, g: 0.03, b: 0.06, a: 0.92}
+  trapCounterTextColor: {r: 1, g: 1, b: 1, a: 1}
+  trapCounterFontSize: 22
+  mythicSlotSize: {x: 84, y: 84}
+  enemyMythicTopPosition: {x: 486, y: 600}
+  enemyMythicBottomPosition: {x: 486, y: 485}
+  playerMythicTopPosition: {x: 486, y: -445}
+  playerMythicBottomPosition: {x: 486, y: -560}
+  enemyHudPosition: {x: -392, y: 1010}
+  playerHudPosition: {x: -392, y: -945}
+  hudStatusSize: {x: 250, y: 160}
+  leftHudPosition: {x: -490, y: -880}
+  leftHudSize: {x: 122, y: 420}
+  mainButtonFramePosition: {x: 430, y: -880}
+  mainButtonFrameSize: {x: 210, y: 210}
+--- !u!4 &1576481265
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576481263}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 733.411, y: 1039.2487, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1580323560
 GameObject:
   m_ObjectHideFlags: 0
@@ -1205,7 +1344,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1839373481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1218,13 +1357,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff5c0d89bef8d314486466c0149f30d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardGame.UI.BattleBoardSkinUI
-  enemyBoardColor: {r: 0.1, g: 0.07, b: 0.1, a: 0.35}
-  playerBoardColor: {r: 0.05, g: 0.1, b: 0.18, a: 0.35}
-  trapColor: {r: 0.04, g: 0.04, b: 0.06, a: 0.52}
+  updateLayoutEveryFrame: 1
+  topBackgroundColor: {r: 0.025, g: 0.035, b: 0.065, a: 1}
+  middleBackgroundColor: {r: 0.035, g: 0.05, b: 0.09, a: 1}
+  bottomBackgroundColor: {r: 0.02, g: 0.028, b: 0.052, a: 1}
+  enemyPanelColor: {r: 0.16, g: 0.12, b: 0.2, a: 0.9}
+  playerPanelColor: {r: 0.1, g: 0.15, b: 0.26, a: 0.9}
+  panelBorderColor: {r: 0.83, g: 0.64, b: 0.32, a: 0.5}
+  slotFrameColor: {r: 0.06, g: 0.07, b: 0.1, a: 0.72}
+  trapFrameColor: {r: 0.05, g: 0.05, b: 0.07, a: 0.7}
   combatColor: {r: 0.02, g: 0.04, b: 0.1, a: 0.88}
-  bottomColor: {r: 0.04, g: 0.1, b: 0.18, a: 0.92}
-  lineColor: {r: 0.95, g: 0.78, b: 0.36, a: 0.26}
-  labelFontSize: 16
+  combatGlowColor: {r: 0.25, g: 0.12, b: 0.75, a: 0.32}
+  combatLineColor: {r: 0.2, g: 0.55, b: 1, a: 0.45}
+  hudPanelColor: {r: 0.015, g: 0.025, b: 0.045, a: 0.94}
+  hudBorderColor: {r: 0.82, g: 0.67, b: 0.38, a: 0.44}
+  mythicOuterColor: {r: 0.94, g: 0.72, b: 0.22, a: 1}
+  mythicInnerPlayerColor: {r: 0.08, g: 0.35, b: 1, a: 0.92}
+  mythicInnerEnemyColor: {r: 0.68, g: 0.08, b: 0.8, a: 0.92}
+  mythicEmptyColor: {r: 0.14, g: 0.12, b: 0.07, a: 0.88}
+  creatureFramePadding: {x: 8, y: 8}
+  trapFramePadding: {x: 5, y: 5}
+  creatureSlots: 5
+  trapSlots: 6
 --- !u!4 &1839373482
 Transform:
   m_ObjectHideFlags: 0
@@ -1285,7 +1439,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1895502256}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1350,7 +1504,6 @@ SceneRoots:
   - {fileID: 1177670538}
   - {fileID: 1580323562}
   - {fileID: 1253444680}
-  - {fileID: 427482259}
   - {fileID: 74176005}
   - {fileID: 862795941}
   - {fileID: 1016933510}
@@ -1360,8 +1513,10 @@ SceneRoots:
   - {fileID: 2122121080}
   - {fileID: 763017490}
   - {fileID: 469351186}
-  - {fileID: 1895502258}
   - {fileID: 405369685}
-  - {fileID: 302638999}
-  - {fileID: 1839373482}
   - {fileID: 34823257}
+  - {fileID: 1839373482}
+  - {fileID: 427482259}
+  - {fileID: 302638999}
+  - {fileID: 1895502258}
+  - {fileID: 1576481265}

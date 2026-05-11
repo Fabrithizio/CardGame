@@ -16,7 +16,7 @@ MonoBehaviour:
   cardName: Aprisionamento da Alma
   description: "Magia de a\xE7\xE3o: criatura inimiga alvo n\xE3o pode atacar por
     2 turnos."
-  artwork: {fileID: 0}
+  artwork: {fileID: 21300000, guid: 7b913a4a0a4a45949bca4a4c54b33863, type: 3}
   cardType: 1
   rarity: 0
   cost: 2
