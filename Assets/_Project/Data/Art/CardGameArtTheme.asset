@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbc643745148cb44390bc653ce72d438, type: 3}
+  m_Name: CardGameArtTheme
+  m_EditorClassIdentifier: Assembly-CSharp::CardGame.Visual.CardGameArtTheme
+  boardBattleCosmic: {fileID: 21300000, guid: ee6002083b47f904e9e226ee77da72e7, type: 3}
+  arenaBackgroundMain: {fileID: 21300000, guid: 0b6610e4766905a4db603fb09e4ed987, type: 3}
+  combatBand: {fileID: 21300000, guid: 2da196ebf1ca1d9418990bedc1fafc60, type: 3}
+  cardBackCosmic: {fileID: 21300000, guid: b16a71a712b8551478213188365e1155, type: 3}
+  frameCreature: {fileID: 21300000, guid: 26ddddba25dac9b4c93112f4e91500f0, type: 3}
+  frameSpell: {fileID: 21300000, guid: faa5828a6aef4bc4394e10c29e27d319, type: 3}
+  frameTrap: {fileID: 21300000, guid: bd4f808a70bad654a8411feb1943d3db, type: 3}
+  frameMythic: {fileID: 21300000, guid: e3106b93c79d9f043acb54294376b15f, type: 3}
+  hudLeftPanel: {fileID: 21300000, guid: eefebafdb77234c4ea7f8a713999ba9a, type: 3}
+  hudStatusPanel: {fileID: 21300000, guid: 206f60a403095e0419a500c4e95d0447, type: 3}
+  mainButtonFrame: {fileID: 21300000, guid: 2ad7e7028edd33d4dac29a31de5a7306, type: 3}
+  cardBackDefault: {fileID: 21300000, guid: 702674c45bb2d0742bd3f3d0124591bb, type: 3}
+  slotCreatureEmpty: {fileID: 21300000, guid: 5db2a5fb7588943418fe4ff8bb17ca65, type: 3}
+  slotTrapEmpty: {fileID: 21300000, guid: f60d4115755a8824fb1939dad0c68560, type: 3}
+  mythicSlot: {fileID: -6946012761199627600, guid: 29f8e07a139007e408718be833d5f8fb, type: 3}
+  iconSpeed: {fileID: 21300000, guid: f6908a11626b1074a9955262e61ecf61, type: 3}
+  iconDefense: {fileID: 21300000, guid: 263157f181a44194ab79cfb4b56f38ea, type: 3}
+  iconFocus: {fileID: 21300000, guid: b92c7ceb39479424ab4bf79298cb14fe, type: 3}
+  iconResistance: {fileID: 21300000, guid: 1e9ed0eb2ee5e2d4c94bd0be6c795885, type: 3}
+  buffVortex: {fileID: 21300000, guid: 4ffed0ee67636384193b3270b3539707, type: 3}
+  buffSkull: {fileID: 21300000, guid: 2b74c8c17b735404b824815c907aef79, type: 3}
+  buffShield: {fileID: 21300000, guid: f6fe3a99ebc817f4fab098f9bf55afc2, type: 3}
+  buffSword: {fileID: 21300000, guid: 8c6903eaff2213241a4cd65aae82f247, type: 3}
+  buffHourglass: {fileID: 21300000, guid: 1a2fb51df614fbd4aa7fc5bcde397ba4, type: 3}
+  vfxSlashViolet: {fileID: 21300000, guid: 6882a3ac374acba43ae195430b18e92e, type: 3}
+  vfxHealGold: {fileID: 21300000, guid: 1f6011bcbab704a4d8e03fc8f4842a1d, type: 3}
+  vfxMythicBurst: {fileID: 21300000, guid: 3492a6d5cbdae6d489624d8e9ac1b13d, type: 3}
+  vfxShieldBlue: {fileID: 21300000, guid: 50ca1e6dcdf5dc042bbcbd2943da2c95, type: 3}
