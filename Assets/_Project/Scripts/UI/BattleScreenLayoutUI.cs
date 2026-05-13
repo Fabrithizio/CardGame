@@ -1,6 +1,6 @@
 // Caminho: Assets/_Project/Scripts/UI/BattleScreenLayoutUI.cs
-// Descrição: Layout mestre mobile em retrato, com proporção próxima da referência.
-// Correção Pass 13: OnValidate não cria Canvas/objetos para evitar warnings "SendMessage cannot be called during Awake/OnValidate".
+// Descrição: Layout mestre mobile em retrato. Deixa o campo simétrico,
+// aproxima as linhas do centro e cria zonas estáveis para HUD, mão e botão.
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -53,34 +53,44 @@ namespace CardGame.UI
         [Header("Atualização em Tempo Real")]
         [SerializeField] private bool updateLayoutEveryFrame = true;
 
-        [Header("Blocos Principais - Y")]
-        [SerializeField] [Range(0f, 1f)] private float enemyHudMinY = 0.875f;
-        [SerializeField] [Range(0f, 1f)] private float enemyBoardMinY = 0.620f;
-        [SerializeField] [Range(0f, 1f)] private float combatMinY = 0.505f;
-        [SerializeField] [Range(0f, 1f)] private float playerBoardMinY = 0.260f;
-        [SerializeField] [Range(0f, 1f)] private float bottomHudMaxY = 0.260f;
+        [Header("Blocos Principais")]
+        [SerializeField] [Range(0f, 1f)] private float enemyHudMinY = 0.872f;
+        [SerializeField] [Range(0f, 1f)] private float enemyBoardMinY = 0.545f;
+        [SerializeField] [Range(0f, 1f)] private float combatMinY = 0.455f;
+        [SerializeField] [Range(0f, 1f)] private float playerBoardMinY = 0.205f;
+        [SerializeField] [Range(0f, 1f)] private float bottomHudMaxY = 0.205f;
 
         [Header("Campo - Largura")]
-        [SerializeField] [Range(0f, 0.2f)] private float boardLeft = 0.020f;
-        [SerializeField] [Range(0.65f, 0.95f)] private float boardCardsRight = 0.905f;
-        [SerializeField] [Range(0.84f, 1f)] private float mythicLeft = 0.905f;
-        [SerializeField] [Range(0.90f, 1f)] private float mythicRight = 0.992f;
+        [SerializeField] [Range(0f, 0.18f)] private float boardLeft = 0.070f;
+        [SerializeField] [Range(0.70f, 1f)] private float boardCardsRight = 0.885f;
+        [SerializeField] [Range(0.80f, 1f)] private float mythicLeft = 0.890f;
+        [SerializeField] [Range(0.88f, 1f)] private float mythicRight = 0.985f;
 
-        [Header("Campo - Altura Interna")]
-        [SerializeField] [Range(0.28f, 0.70f)] private float creatureRowMinY = 0.385f;
-        [SerializeField] [Range(0.72f, 1f)] private float creatureRowMaxY = 0.965f;
-        [SerializeField] [Range(0f, 0.35f)] private float trapRowMinY = 0.055f;
-        [SerializeField] [Range(0.20f, 0.55f)] private float trapRowMaxY = 0.385f;
+        [Header("Campo Inimigo")]
+        [SerializeField] [Range(0f, 1f)] private float enemyTrapMinY = 0.605f;
+        [SerializeField] [Range(0f, 1f)] private float enemyTrapMaxY = 0.785f;
+        [SerializeField] [Range(0f, 1f)] private float enemyCreatureMinY = 0.115f;
+        [SerializeField] [Range(0f, 1f)] private float enemyCreatureMaxY = 0.515f;
+
+        [Header("Campo Jogador")]
+        [SerializeField] [Range(0f, 1f)] private float playerCreatureMinY = 0.325f;
+        [SerializeField] [Range(0f, 1f)] private float playerCreatureMaxY = 0.835f;
+        [SerializeField] [Range(0f, 1f)] private float playerTrapMinY = 0.095f;
+        [SerializeField] [Range(0f, 1f)] private float playerTrapMaxY = 0.275f;
 
         [Header("Rodapé")]
-        [SerializeField] [Range(0f, 0.2f)] private float bottomLeft = 0.020f;
-        [SerializeField] [Range(0.07f, 0.18f)] private float playerDeckRight = 0.100f;
-        [SerializeField] [Range(0.08f, 0.25f)] private float playerHealthLeft = 0.115f;
-        [SerializeField] [Range(0.25f, 0.45f)] private float playerHealthRight = 0.345f;
-        [SerializeField] [Range(0.10f, 0.40f)] private float playerHandLeft = 0.185f;
-        [SerializeField] [Range(0.60f, 0.92f)] private float playerHandRight = 0.825f;
-        [SerializeField] [Range(0.74f, 0.95f)] private float turnButtonLeft = 0.835f;
-        [SerializeField] [Range(0.88f, 1f)] private float turnButtonRight = 0.975f;
+        [SerializeField] [Range(0f, 0.2f)] private float bottomLeft = 0.018f;
+        [SerializeField] [Range(0.07f, 0.18f)] private float playerDeckRight = 0.110f;
+        [SerializeField] [Range(0.08f, 0.25f)] private float playerHealthLeft = 0.118f;
+        [SerializeField] [Range(0.25f, 0.45f)] private float playerHealthRight = 0.350f;
+        [SerializeField] [Range(0.05f, 0.40f)] private float playerHandLeft = 0.092f;
+        [SerializeField] [Range(0.60f, 0.98f)] private float playerHandRight = 0.898f;
+        [SerializeField] [Range(0.70f, 0.98f)] private float turnButtonLeft = 0.810f;
+        [SerializeField] [Range(0.86f, 1f)] private float turnButtonRight = 0.990f;
+
+        [Header("Limpeza")]
+        [SerializeField] private bool hideLegacyBoardVisual = true;
+        [SerializeField] private bool hideLegacyDebugHud = true;
 
         [Header("Debug")]
         [SerializeField] private bool showDebugZoneNames = false;
@@ -90,6 +100,7 @@ namespace CardGame.UI
         private RectTransform root;
         private Font defaultFont;
         private readonly Dictionary<BattleScreenZone, RectTransform> zones = new();
+        private bool legacyObjectsHidden;
 
         public static BattleScreenLayoutUI GetOrCreate()
         {
@@ -99,7 +110,6 @@ namespace CardGame.UI
             }
 
             BattleScreenLayoutUI existing = FindFirstObjectByType<BattleScreenLayoutUI>();
-
             if (existing != null)
             {
                 Instance = existing;
@@ -116,13 +126,7 @@ namespace CardGame.UI
         public RectTransform GetZone(BattleScreenZone zone)
         {
             EnsureBuilt();
-
-            if (zones.TryGetValue(zone, out RectTransform rect) && rect != null)
-            {
-                return rect;
-            }
-
-            return root;
+            return zones.TryGetValue(zone, out RectTransform rect) && rect != null ? rect : root;
         }
 
         private void Awake()
@@ -136,6 +140,7 @@ namespace CardGame.UI
             Instance = this;
             EnsureBuilt();
             ApplyLayout();
+            HideLegacyObjectsIfNeeded();
         }
 
         private void Update()
@@ -145,14 +150,8 @@ namespace CardGame.UI
                 EnsureBuilt();
                 ApplyLayout();
             }
-        }
 
-        private void OnValidate()
-        {
-            // Não criar Canvas, GameObject, SetParent ou AddComponent aqui.
-            // O Unity pode chamar OnValidate durante Awake/CheckConsistency e isso gera:
-            // "SendMessage cannot be called during Awake, CheckConsistency, or OnValidate".
-            // O Update aplica as mudanças em tempo real quando estiver em Play.
+            HideLegacyObjectsIfNeeded();
         }
 
         private void OnDestroy()
@@ -165,10 +164,7 @@ namespace CardGame.UI
 
         private void EnsureBuilt()
         {
-            if (root != null && zones.Count > 0)
-            {
-                return;
-            }
+            if (root != null && zones.Count > 0) return;
 
             defaultFont = ResponsiveUIUtility.GetDefaultFont();
             CreateCanvas();
@@ -199,7 +195,6 @@ namespace CardGame.UI
             else
             {
                 canvasScaler = canvas.GetComponent<CanvasScaler>();
-
                 if (canvasScaler == null)
                 {
                     canvasScaler = canvas.gameObject.AddComponent<CanvasScaler>();
@@ -245,8 +240,8 @@ namespace CardGame.UI
             zones[BattleScreenZone.TurnStatus] = GetOrCreateZone("TurnStatus", zones[BattleScreenZone.EnemyHud]);
             zones[BattleScreenZone.BattleLog] = GetOrCreateZone("BattleLog", zones[BattleScreenZone.EnemyHud]);
 
-            zones[BattleScreenZone.EnemyCreatureRow] = GetOrCreateZone("EnemyCreatureRow", zones[BattleScreenZone.EnemyBoard]);
             zones[BattleScreenZone.EnemyTrapRow] = GetOrCreateZone("EnemyTrapRow", zones[BattleScreenZone.EnemyBoard]);
+            zones[BattleScreenZone.EnemyCreatureRow] = GetOrCreateZone("EnemyCreatureRow", zones[BattleScreenZone.EnemyBoard]);
             zones[BattleScreenZone.EnemyMythic] = GetOrCreateZone("EnemyMythic", zones[BattleScreenZone.EnemyBoard]);
 
             zones[BattleScreenZone.PlayerCreatureRow] = GetOrCreateZone("PlayerCreatureRow", zones[BattleScreenZone.PlayerBoard]);
@@ -262,7 +257,6 @@ namespace CardGame.UI
         private RectTransform GetOrCreateZone(string name, Transform parent)
         {
             Transform existing = parent.Find(name);
-
             if (existing != null && existing.TryGetComponent(out RectTransform existingRect))
             {
                 return existingRect;
@@ -277,16 +271,12 @@ namespace CardGame.UI
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rect.pivot = new Vector2(0.5f, 0.5f);
-
             return rect;
         }
 
         private void ApplyLayout()
         {
-            if (root == null || zones.Count == 0)
-            {
-                return;
-            }
+            if (root == null || zones.Count == 0) return;
 
             if (canvasScaler != null)
             {
@@ -305,27 +295,54 @@ namespace CardGame.UI
             SetAnchors(zones[BattleScreenZone.PlayerBoard], 0f, playerBoardMinY, 1f, combatMinY);
             SetAnchors(zones[BattleScreenZone.PlayerHudHand], 0f, 0f, 1f, bottomHudMaxY);
 
-            SetAnchors(zones[BattleScreenZone.EnemyDeck], 0.020f, 0.18f, 0.095f, 0.92f);
-            SetAnchors(zones[BattleScreenZone.EnemyHealth], 0.115f, 0.34f, 0.320f, 0.86f);
-            SetAnchors(zones[BattleScreenZone.TurnStatus], 0.355f, 0.43f, 0.635f, 0.91f);
-            SetAnchors(zones[BattleScreenZone.BattleLog], 0.655f, 0.28f, 0.900f, 0.82f);
+            SetAnchors(zones[BattleScreenZone.EnemyDeck], 0.020f, 0.15f, 0.090f, 0.92f);
+            SetAnchors(zones[BattleScreenZone.EnemyHealth], 0.112f, 0.36f, 0.320f, 0.90f);
+            SetAnchors(zones[BattleScreenZone.TurnStatus], 0.345f, 0.45f, 0.640f, 0.92f);
+            SetAnchors(zones[BattleScreenZone.BattleLog], 0.655f, 0.34f, 0.905f, 0.84f);
 
-            SetAnchors(zones[BattleScreenZone.EnemyCreatureRow], boardLeft, creatureRowMinY, boardCardsRight, creatureRowMaxY);
-            SetAnchors(zones[BattleScreenZone.EnemyTrapRow], boardLeft, trapRowMinY, boardCardsRight, trapRowMaxY);
-            SetAnchors(zones[BattleScreenZone.EnemyMythic], mythicLeft, 0.12f, mythicRight, 0.90f);
+            SetAnchors(zones[BattleScreenZone.EnemyTrapRow], boardLeft, enemyTrapMinY, boardCardsRight, enemyTrapMaxY);
+            SetAnchors(zones[BattleScreenZone.EnemyCreatureRow], boardLeft, enemyCreatureMinY, boardCardsRight, enemyCreatureMaxY);
+            SetAnchors(zones[BattleScreenZone.EnemyMythic], mythicLeft, 0.08f, mythicRight, 0.94f);
 
-            SetAnchors(zones[BattleScreenZone.PlayerCreatureRow], boardLeft, creatureRowMinY, boardCardsRight, creatureRowMaxY);
-            SetAnchors(zones[BattleScreenZone.PlayerTrapRow], boardLeft, trapRowMinY, boardCardsRight, trapRowMaxY);
-            SetAnchors(zones[BattleScreenZone.PlayerMythic], mythicLeft, 0.12f, mythicRight, 0.90f);
+            SetAnchors(zones[BattleScreenZone.PlayerCreatureRow], boardLeft, playerCreatureMinY, boardCardsRight, playerCreatureMaxY);
+            SetAnchors(zones[BattleScreenZone.PlayerTrapRow], boardLeft, playerTrapMinY, boardCardsRight, playerTrapMaxY);
+            SetAnchors(zones[BattleScreenZone.PlayerMythic], mythicLeft, 0.08f, mythicRight, 0.94f);
 
-            SetAnchors(zones[BattleScreenZone.PlayerDeck], bottomLeft, 0.20f, playerDeckRight, 0.88f);
-            SetAnchors(zones[BattleScreenZone.PlayerHealth], playerHealthLeft, 0.38f, playerHealthRight, 0.76f);
-            SetAnchors(zones[BattleScreenZone.PlayerHand], playerHandLeft, 0.00f, playerHandRight, bottomHudMaxY * 0.92f);
-            SetAnchors(zones[BattleScreenZone.TurnButton], turnButtonLeft, 0.34f, turnButtonRight, 0.78f);
+            SetAnchors(zones[BattleScreenZone.PlayerDeck], bottomLeft, 0.16f, playerDeckRight, 0.88f);
+            SetAnchors(zones[BattleScreenZone.PlayerHealth], playerHealthLeft, 0.34f, playerHealthRight, 0.82f);
+            SetAnchors(zones[BattleScreenZone.PlayerHand], playerHandLeft, 0.00f, playerHandRight, 1f);
+            SetAnchors(zones[BattleScreenZone.TurnButton], turnButtonLeft, 0.20f, turnButtonRight, 0.86f);
 
             if (showDebugZoneNames)
             {
                 CreateMissingDebugLabels();
+            }
+        }
+
+        private void HideLegacyObjectsIfNeeded()
+        {
+            if (legacyObjectsHidden) return;
+
+            if (hideLegacyBoardVisual)
+            {
+                DisableObjectByName("BattleBoardVisual");
+            }
+
+            if (hideLegacyDebugHud)
+            {
+                DisableObjectByName("BattleDebugHUD");
+            }
+
+            legacyObjectsHidden = true;
+        }
+
+        private void DisableObjectByName(string objectName)
+        {
+            if (string.IsNullOrWhiteSpace(objectName)) return;
+            GameObject target = GameObject.Find(objectName);
+            if (target != null && target != gameObject)
+            {
+                target.SetActive(false);
             }
         }
 
@@ -336,13 +353,18 @@ namespace CardGame.UI
 
         private void SetAnchors(RectTransform rect, float minX, float minY, float maxX, float maxY)
         {
-            if (rect == null)
-            {
-                return;
-            }
+            if (rect == null) return;
 
-            rect.anchorMin = new Vector2(Mathf.Clamp01(minX), Mathf.Clamp01(minY));
-            rect.anchorMax = new Vector2(Mathf.Clamp01(maxX), Mathf.Clamp01(maxY));
+            minX = Mathf.Clamp01(minX);
+            minY = Mathf.Clamp01(minY);
+            maxX = Mathf.Clamp01(maxX);
+            maxY = Mathf.Clamp01(maxY);
+
+            if (maxX < minX) (minX, maxX) = (maxX, minX);
+            if (maxY < minY) (minY, maxY) = (maxY, minY);
+
+            rect.anchorMin = new Vector2(minX, minY);
+            rect.anchorMax = new Vector2(maxX, maxY);
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             rect.pivot = new Vector2(0.5f, 0.5f);
@@ -352,10 +374,7 @@ namespace CardGame.UI
         {
             foreach (KeyValuePair<BattleScreenZone, RectTransform> entry in zones)
             {
-                if (entry.Value == null || entry.Value.Find("DebugLabel") != null)
-                {
-                    continue;
-                }
+                if (entry.Value == null || entry.Value.Find("DebugLabel") != null) continue;
 
                 if (entry.Key == BattleScreenZone.Root ||
                     entry.Key == BattleScreenZone.SkinLayer ||
@@ -385,8 +404,9 @@ namespace CardGame.UI
             label.font = defaultFont;
             label.fontSize = 16;
             label.alignment = TextAnchor.MiddleCenter;
-            label.color = new Color(1f, 1f, 1f, 0.28f);
+            label.color = new Color(1f, 1f, 1f, 0.20f);
             label.text = text;
+            label.raycastTarget = false;
         }
     }
 }

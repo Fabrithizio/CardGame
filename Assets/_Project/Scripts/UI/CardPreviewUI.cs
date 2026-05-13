@@ -1,8 +1,9 @@
 // Caminho: Assets/_Project/Scripts/UI/CardPreviewUI.cs
-// Descrição: Mostra uma prévia grande da carta selecionada, com botões para confirmar a jogada ou fechar sem jogar.
+// Descrição: Prévia grande premium usando molduras do tema visual. Mantém botões de jogar/fechar.
 
 using CardGame.Battle;
 using CardGame.Cards;
+using CardGame.Visual;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,37 +15,40 @@ namespace CardGame.UI
         [SerializeField] private BattleManager battleManager;
 
         [Header("Layout")]
-        [SerializeField] private Vector2 panelSize = new Vector2(520f, 720f);
+        [SerializeField] private Vector2 panelSize = new Vector2(650f, 910f);
         [SerializeField] private Vector2 buttonSize = new Vector2(190f, 58f);
 
         [Header("Texto")]
-        [SerializeField] private int titleFontSize = 30;
-        [SerializeField] private int infoFontSize = 18;
-        [SerializeField] private int descriptionFontSize = 17;
-        [SerializeField] private int buttonFontSize = 20;
+        [SerializeField] private int titleFontSize = 26;
+        [SerializeField] private int infoFontSize = 15;
+        [SerializeField] private int descriptionFontSize = 15;
+        [SerializeField] private int buttonFontSize = 18;
 
         [Header("Cores")]
-        [SerializeField] private Color overlayColor = new Color(0f, 0f, 0f, 0.58f);
-        [SerializeField] private Color creatureColor = new Color(0.10f, 0.28f, 0.62f, 0.98f);
-        [SerializeField] private Color spellColor = new Color(0.35f, 0.16f, 0.62f, 0.98f);
-        [SerializeField] private Color trapColor = new Color(0.68f, 0.35f, 0.10f, 0.98f);
-        [SerializeField] private Color equipmentColor = new Color(0.42f, 0.42f, 0.42f, 0.98f);
-        [SerializeField] private Color playButtonColor = new Color(0.12f, 0.48f, 0.22f, 0.98f);
-        [SerializeField] private Color closeButtonColor = new Color(0.45f, 0.12f, 0.12f, 0.98f);
+        [SerializeField] private Color overlayColor = new Color(0f, 0f, 0f, 0.64f);
+        [SerializeField] private Color textColor = new Color(0.98f, 0.91f, 0.72f, 1f);
+        [SerializeField] private Color subTextColor = new Color(0.74f, 0.82f, 1f, 0.92f);
+        [SerializeField] private Color playButtonColor = new Color(0.10f, 0.42f, 0.23f, 0.98f);
+        [SerializeField] private Color closeButtonColor = new Color(0.46f, 0.10f, 0.12f, 0.98f);
+        [SerializeField] private Color unavailableButtonColor = new Color(0.12f, 0.23f, 0.34f, 0.82f);
 
         private Canvas canvas;
         private RectTransform root;
         private GameObject overlayObject;
         private GameObject panelObject;
-        private Image panelBackground;
+        private Image backgroundImage;
         private Image artworkImage;
+        private Image frameImage;
         private Text titleText;
         private Text typeText;
+        private Text costText;
         private Text statsText;
         private Text descriptionText;
         private Button playButton;
+        private Image playButtonImage;
         private Text playButtonText;
         private Font defaultFont;
+        private CardGameArtTheme theme;
 
         private CardRuntime selectedCard;
         private System.Action<CardRuntime> onConfirmPlay;
@@ -53,53 +57,37 @@ namespace CardGame.UI
 
         private void Awake()
         {
-            if (battleManager == null)
-            {
-                battleManager = FindFirstObjectByType<BattleManager>();
-            }
+            if (battleManager == null) battleManager = FindFirstObjectByType<BattleManager>();
 
-            defaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            if (defaultFont == null)
-            {
-                defaultFont = Font.CreateDynamicFontFromOSFont("Arial", 16);
-            }
-
+            defaultFont = ResponsiveUIUtility.GetDefaultFont();
+            theme = CardGameArtThemeProvider.Current;
             CreateCanvas();
             CreatePreview();
             Hide();
         }
 
+        private void Update()
+        {
+            if (theme == null) theme = CardGameArtThemeProvider.Current;
+        }
+
         public void Show(CardRuntime card, System.Action<CardRuntime> confirmCallback)
         {
-            if (card == null)
-            {
-                return;
-            }
+            if (card == null) return;
 
             selectedCard = card;
             onConfirmPlay = confirmCallback;
-
             overlayObject.SetActive(true);
             panelObject.SetActive(true);
-
-            RefreshTexts();
+            RefreshView();
         }
 
         public void Hide()
         {
             selectedCard = null;
             onConfirmPlay = null;
-
-            if (overlayObject != null)
-            {
-                overlayObject.SetActive(false);
-            }
-
-            if (panelObject != null)
-            {
-                panelObject.SetActive(false);
-            }
+            if (overlayObject != null) overlayObject.SetActive(false);
+            if (panelObject != null) panelObject.SetActive(false);
         }
 
         private void ConfirmPlay()
@@ -112,9 +100,7 @@ namespace CardGame.UI
 
             CardRuntime cardToPlay = selectedCard;
             System.Action<CardRuntime> callback = onConfirmPlay;
-
             Hide();
-
             callback?.Invoke(cardToPlay);
         }
 
@@ -129,8 +115,8 @@ namespace CardGame.UI
 
             CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080f, 1920f);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(1080f, 2400f);
+            scaler.matchWidthOrHeight = 0.65f;
 
             canvasObject.AddComponent<GraphicRaycaster>();
 
@@ -178,72 +164,61 @@ namespace CardGame.UI
             panelRect.anchoredPosition = Vector2.zero;
             panelRect.sizeDelta = panelSize;
 
-            panelBackground = panelObject.AddComponent<Image>();
-            panelBackground.color = creatureColor;
+            backgroundImage = panelObject.AddComponent<Image>();
+            backgroundImage.color = new Color(0.01f, 0.015f, 0.035f, 0.96f);
 
-            Outline outline = panelObject.AddComponent<Outline>();
-            outline.effectColor = new Color(1f, 1f, 1f, 0.32f);
-            outline.effectDistance = new Vector2(3f, -3f);
+            artworkImage = CreateImage("Artwork");
+            frameImage = CreateImage("Frame");
 
-            VerticalLayoutGroup vertical = panelObject.AddComponent<VerticalLayoutGroup>();
-            vertical.padding = new RectOffset(26, 26, 30, 24);
-            vertical.spacing = 14;
-            vertical.childAlignment = TextAnchor.UpperCenter;
-            vertical.childControlWidth = true;
-            vertical.childControlHeight = false;
-            vertical.childForceExpandWidth = true;
-            vertical.childForceExpandHeight = false;
-
-            titleText = CreateText("Title", titleFontSize, FontStyle.Bold, 78f, TextAnchor.MiddleCenter);
-            typeText = CreateText("Type", infoFontSize, FontStyle.Italic, 42f, TextAnchor.MiddleCenter);
-            artworkImage = CreateArtwork("Artwork", panelSize.x - 52f, Mathf.Clamp(panelSize.y * 0.27f, 220f, 330f));
-            statsText = CreateText("Stats", infoFontSize, FontStyle.Bold, 170f, TextAnchor.MiddleCenter);
-            descriptionText = CreateText("Description", descriptionFontSize, FontStyle.Normal, 230f, TextAnchor.UpperLeft);
+            titleText = CreateText("Title", titleFontSize, FontStyle.Bold, TextAnchor.MiddleCenter);
+            typeText = CreateText("Type", infoFontSize, FontStyle.Italic, TextAnchor.MiddleCenter);
+            costText = CreateText("Cost", infoFontSize + 5, FontStyle.Bold, TextAnchor.MiddleCenter);
+            statsText = CreateText("Stats", infoFontSize, FontStyle.Bold, TextAnchor.MiddleCenter);
+            descriptionText = CreateText("Description", descriptionFontSize, FontStyle.Normal, TextAnchor.UpperLeft);
 
             CreateButtonRow();
+            ApplyStaticLayout();
         }
 
-        private Image CreateArtwork(string objectName, float width, float height)
+        private Image CreateImage(string objectName)
         {
-            GameObject artworkObject = new GameObject(objectName);
-            artworkObject.transform.SetParent(panelObject.transform, false);
+            GameObject obj = new GameObject(objectName);
+            obj.transform.SetParent(panelObject.transform, false);
 
-            RectTransform rect = artworkObject.AddComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(width, height);
+            RectTransform rect = obj.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
 
-            Image image = artworkObject.AddComponent<Image>();
+            Image image = obj.AddComponent<Image>();
             image.color = Color.white;
             image.preserveAspect = true;
             image.raycastTarget = false;
-            artworkObject.SetActive(false);
-
-            Outline outline = artworkObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.55f);
-            outline.effectDistance = new Vector2(2f, -2f);
-
             return image;
         }
 
-        private Text CreateText(string objectName, int fontSize, FontStyle fontStyle, float height, TextAnchor alignment)
+        private Text CreateText(string objectName, int fontSize, FontStyle fontStyle, TextAnchor alignment)
         {
-            GameObject textObject = new GameObject(objectName);
-            textObject.transform.SetParent(panelObject.transform, false);
+            GameObject obj = new GameObject(objectName);
+            obj.transform.SetParent(panelObject.transform, false);
 
-            Text text = textObject.AddComponent<Text>();
+            RectTransform rect = obj.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+
+            Text text = obj.AddComponent<Text>();
             text.font = defaultFont;
-            text.fontSize = fontSize;
+            text.fontSize = Mathf.Clamp(fontSize, 10, 34);
             text.fontStyle = fontStyle;
             text.alignment = alignment;
-            text.color = Color.white;
+            text.color = textColor;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
             text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 10;
-            text.resizeTextMaxSize = fontSize;
-
-            RectTransform rect = textObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(panelSize.x - 52f, height);
-
+            text.resizeTextMinSize = 9;
+            text.resizeTextMaxSize = Mathf.Clamp(fontSize, 10, 34);
+            text.raycastTarget = false;
             return text;
         }
 
@@ -253,10 +228,14 @@ namespace CardGame.UI
             rowObject.transform.SetParent(panelObject.transform, false);
 
             RectTransform rowRect = rowObject.AddComponent<RectTransform>();
-            rowRect.sizeDelta = new Vector2(panelSize.x - 52f, buttonSize.y);
+            rowRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rowRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rowRect.pivot = new Vector2(0.5f, 0.5f);
+            rowRect.sizeDelta = new Vector2(panelSize.x * 0.78f, buttonSize.y);
+            rowRect.anchoredPosition = new Vector2(0f, -panelSize.y * 0.415f);
 
             HorizontalLayoutGroup row = rowObject.AddComponent<HorizontalLayoutGroup>();
-            row.spacing = 18f;
+            row.spacing = 20f;
             row.childAlignment = TextAnchor.MiddleCenter;
             row.childControlWidth = false;
             row.childControlHeight = false;
@@ -265,6 +244,7 @@ namespace CardGame.UI
 
             CreateButton(rowObject.transform, "FECHAR", closeButtonColor, Hide);
             playButton = CreateButton(rowObject.transform, "JOGAR", playButtonColor, ConfirmPlay);
+            playButtonImage = playButton.GetComponent<Image>();
             playButtonText = playButton.GetComponentInChildren<Text>();
         }
 
@@ -292,7 +272,7 @@ namespace CardGame.UI
 
             Text text = textObject.AddComponent<Text>();
             text.font = defaultFont;
-            text.fontSize = buttonFontSize;
+            text.fontSize = Mathf.Clamp(buttonFontSize, 12, 24);
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
@@ -307,146 +287,128 @@ namespace CardGame.UI
             return button;
         }
 
-        private void RefreshTexts()
+        private void ApplyStaticLayout()
         {
-            if (selectedCard == null)
-            {
-                return;
-            }
+            RectTransform artworkRect = artworkImage.rectTransform;
+            artworkRect.sizeDelta = new Vector2(panelSize.x * 0.68f, panelSize.y * 0.40f);
+            artworkRect.anchoredPosition = new Vector2(0f, panelSize.y * 0.165f);
 
-            panelBackground.color = GetColorByCardType(selectedCard.CardType);
+            RectTransform frameRect = frameImage.rectTransform;
+            frameRect.sizeDelta = panelSize;
+            frameRect.anchoredPosition = Vector2.zero;
+
+            costText.rectTransform.sizeDelta = new Vector2(panelSize.x * 0.15f, panelSize.y * 0.08f);
+            costText.rectTransform.anchoredPosition = new Vector2(-panelSize.x * 0.360f, panelSize.y * 0.410f);
+
+            titleText.rectTransform.sizeDelta = new Vector2(panelSize.x * 0.62f, panelSize.y * 0.08f);
+            titleText.rectTransform.anchoredPosition = new Vector2(0f, panelSize.y * 0.382f);
+
+            typeText.rectTransform.sizeDelta = new Vector2(panelSize.x * 0.62f, panelSize.y * 0.055f);
+            typeText.rectTransform.anchoredPosition = new Vector2(0f, -panelSize.y * 0.215f);
+
+            statsText.rectTransform.sizeDelta = new Vector2(panelSize.x * 0.62f, panelSize.y * 0.105f);
+            statsText.rectTransform.anchoredPosition = new Vector2(0f, -panelSize.y * 0.300f);
+
+            descriptionText.rectTransform.sizeDelta = new Vector2(panelSize.x * 0.70f, panelSize.y * 0.140f);
+            descriptionText.rectTransform.anchoredPosition = new Vector2(0f, -panelSize.y * 0.385f);
+        }
+
+        private void RefreshView()
+        {
+            if (selectedCard == null) return;
+            if (theme == null) theme = CardGameArtThemeProvider.Current;
+
+            frameImage.sprite = GetFrameForCard(selectedCard);
+            backgroundImage.color = new Color(0.008f, 0.014f, 0.032f, 0.96f);
 
             Sprite artwork = selectedCard.Data != null ? selectedCard.Data.Artwork : null;
             artworkImage.gameObject.SetActive(artwork != null);
             artworkImage.sprite = artwork;
 
             titleText.text = selectedCard.CardName;
-            typeText.text = $"{selectedCard.CardType} • {selectedCard.Data.Rarity} • Custo {selectedCard.Data.Cost}";
+            costText.text = selectedCard.Data != null ? selectedCard.Data.Cost.ToString() : "0";
+            typeText.text = selectedCard.Data != null ? $"{GetTypeLabel(selectedCard.CardType)} • {selectedCard.Data.Rarity}" : GetTypeLabel(selectedCard.CardType);
             statsText.text = BuildStatsText(selectedCard);
             descriptionText.text = BuildDescriptionText(selectedCard);
+            descriptionText.color = subTextColor;
 
             bool canPlayNow = CanPlaySelectedCard();
             playButton.interactable = canPlayNow;
+            if (playButtonImage != null) playButtonImage.color = canPlayNow ? playButtonColor : unavailableButtonColor;
+            if (playButtonText != null) playButtonText.text = canPlayNow ? "JOGAR" : "VER";
+        }
 
-            if (playButtonText != null)
+        private Sprite GetFrameForCard(CardRuntime card)
+        {
+            if (theme == null) return null;
+
+            return card.CardType switch
             {
-                playButtonText.text = canPlayNow ? "JOGAR" : "INDISPONÍVEL";
-            }
+                CardType.Creature => theme.frameCreature,
+                CardType.Spell => theme.frameSpell,
+                CardType.Trap => theme.frameTrap,
+                _ => theme.frameCreature
+            };
         }
 
         private bool CanPlaySelectedCard()
         {
-            if (selectedCard == null || battleManager == null || battleManager.PlayerState == null || battleManager.TurnManager == null)
+            if (selectedCard == null || onConfirmPlay == null || battleManager == null || battleManager.PlayerState == null || battleManager.TurnManager == null)
             {
                 return false;
             }
 
-            if (!battleManager.TurnManager.IsPlayerTurn)
-            {
-                return false;
-            }
+            if (!battleManager.TurnManager.IsPlayerTurn) return false;
+            if (!battleManager.PlayerState.HasEnoughEnergy(selectedCard.Data.Cost)) return false;
 
-            if (!battleManager.PlayerState.HasEnoughEnergy(selectedCard.Data.Cost))
+            return selectedCard.CardType switch
             {
-                return false;
-            }
-
-            if (selectedCard.CardType == CardType.Creature)
-            {
-                return battleManager.PlayerState.Board.HasFreeCreatureSlot();
-            }
-
-            if (selectedCard.CardType == CardType.Trap)
-            {
-                return battleManager.PlayerState.Board.HasFreeTrapSlot();
-            }
-
-            if (selectedCard.CardType == CardType.Spell)
-            {
-                return false;
-            }
-
-            if (selectedCard.CardType == CardType.Equipment)
-            {
-                return false;
-            }
-
-            return false;
+                CardType.Creature => battleManager.PlayerState.Board.HasFreeCreatureSlot(),
+                CardType.Trap => battleManager.PlayerState.Board.HasFreeTrapSlot(),
+                _ => false
+            };
         }
 
         private string BuildStatsText(CardRuntime card)
         {
             if (card.CardType != CardType.Creature)
             {
-                return $"Custo: {card.Data.Cost}";
+                return $"Custo {card.Data.Cost}";
             }
 
-            return
-                $"ATK {card.CurrentAttack}   HP {card.CurrentHealth}\n" +
-                $"SPD {card.CurrentSpeed}   DEF {card.CurrentDefense}\n" +
-                $"FOC {card.CurrentFocus}   RES {card.CurrentResistance}";
+            return $"ATK {card.CurrentAttack}   HP {card.CurrentHealth}\nSPD {card.CurrentSpeed}   DEF {card.CurrentDefense}\nFOC {card.CurrentFocus}   RES {card.CurrentResistance}";
         }
 
         private string BuildDescriptionText(CardRuntime card)
         {
-            string description = string.IsNullOrWhiteSpace(card.Data.Description)
-                ? "Sem descrição."
-                : card.Data.Description;
+            string description = card.Data == null || string.IsNullOrWhiteSpace(card.Data.Description) ? "Sem descrição." : card.Data.Description;
 
             if (card.CardType != CardType.Creature)
             {
-                return description + "\n\nObs: magias e arenas ainda vão receber sistema de alvo/efeito completo.";
+                return description;
             }
 
-            string specialRules = "";
+            string rules = string.Empty;
+            if (card.Data.CanAttackDirectly) rules += "\n• Pode atacar diretamente.";
+            if (card.Data.HasTaunt) rules += "\n• Provocar.";
+            if (card.Data.HasPiercing) rules += "\n• Perfuração.";
+            if (card.Data.HasLifeSteal) rules += "\n• Roubo de vida.";
+            if (card.Data.HasRetaliation) rules += "\n• Retaliação.";
+            if (card.Data.HasShield) rules += "\n• Escudo inicial.";
 
-            if (card.Data.CanAttackDirectly)
-            {
-                specialRules += "\n• Pode atacar diretamente.";
-            }
-
-            if (card.Data.HasTaunt)
-            {
-                specialRules += "\n• Provocar.";
-            }
-
-            if (card.Data.HasPiercing)
-            {
-                specialRules += "\n• Perfuração.";
-            }
-
-            if (card.Data.HasLifeSteal)
-            {
-                specialRules += "\n• Roubo de vida.";
-            }
-
-            if (card.Data.HasRetaliation)
-            {
-                specialRules += "\n• Retaliação.";
-            }
-
-            if (card.Data.HasShield)
-            {
-                specialRules += "\n• Escudo inicial.";
-            }
-
-            if (string.IsNullOrWhiteSpace(specialRules))
-            {
-                specialRules = "\n• Sem regra especial ativa no protótipo.";
-            }
-
-            return description + "\n" + specialRules;
+            if (string.IsNullOrWhiteSpace(rules)) rules = "\n• Sem regra especial ativa.";
+            return description + rules;
         }
 
-        private Color GetColorByCardType(CardType cardType)
+        private string GetTypeLabel(CardType type)
         {
-            return cardType switch
+            return type switch
             {
-                CardType.Creature => creatureColor,
-                CardType.Spell => spellColor,
-                CardType.Trap => trapColor,
-                CardType.Equipment => equipmentColor,
-                _ => creatureColor
+                CardType.Creature => "CRIATURA",
+                CardType.Spell => "MAGIA",
+                CardType.Trap => "ARMADILHA",
+                CardType.Equipment => "EQUIPAMENTO",
+                _ => "CARTA"
             };
         }
     }
